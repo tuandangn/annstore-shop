@@ -1,9 +1,10 @@
 ﻿using Annstore.Core.Entities;
+using Annstore.Core.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
 
 namespace Annstore.Data
 {
-    public class AnnstoreDbContext : DbContext
+    public class AnnstoreDbContext : DbContext, IDbContext
     {
         public AnnstoreDbContext(DbContextOptions<AnnstoreDbContext> opts) : base(opts)
         {

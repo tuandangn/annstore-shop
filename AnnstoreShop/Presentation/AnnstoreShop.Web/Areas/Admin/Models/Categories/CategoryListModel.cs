@@ -1,10 +1,11 @@
-﻿using Annstore.Core.Entities;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using Annstore.Core.Entities.Catalog;
 
 namespace AnnstoreShop.Web.Areas.Admin.Models.Categories
 {
-    public class CategoryListModel
+    [Serializable]
+    public sealed class CategoryListModel
     {
         public CategoryListModel()
         {

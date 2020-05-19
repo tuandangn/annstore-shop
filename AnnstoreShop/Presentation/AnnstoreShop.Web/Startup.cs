@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Annstore.Data;
 using Annstore.Services;
+using Annstore.Services.Catalog;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +29,8 @@ namespace AnnstoreShop.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AnnstoreDbContext>(opts => opts.UseSqlServer(_configuration.GetConnectionString("AnnstoreDb"), sqlOpts => sqlOpts.MigrationsAssembly("AnnstoreShop.Web")));
+            services.AddScoped<IDbContext, AnnstoreDbContext>();
+            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICategoryService, CategoryService>();
 
             services.AddMvc();

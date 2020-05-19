@@ -1,5 +1,4 @@
-﻿using System;
-using Annstore.Core.Entities;
+﻿using Annstore.Core.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

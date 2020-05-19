@@ -1,17 +1,12 @@
-﻿using Annstore.Core.Entities;
-using Annstore.Data;
-using Annstore.Services;
-using AnnstoreShop.Web.Areas.Admin.Models.Categories;
+﻿using AnnstoreShop.Web.Areas.Admin.Models.Categories;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Annstore.Services.Catalog;
 
 namespace AnnstoreShop.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    public class CategoryController : Controller
+    public sealed class CategoryController : Controller
     {
         private readonly ICategoryService _categoryService;
         

@@ -1,4 +1,4 @@
-﻿namespace AnnstoreShop.Web.Infrastructure
+﻿namespace Annstore.Web.Infrastructure
 {
     public static class Defaults
     {

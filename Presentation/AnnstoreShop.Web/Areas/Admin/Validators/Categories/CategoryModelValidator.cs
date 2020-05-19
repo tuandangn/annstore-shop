@@ -1,7 +1,7 @@
-﻿using AnnstoreShop.Web.Areas.Admin.Models.Categories;
+﻿using Annstore.Web.Areas.Admin.Models.Categories;
 using FluentValidation;
 
-namespace AnnstoreShop.Web.Areas.Admin.Validators.Categories
+namespace Annstore.Web.Areas.Admin.Validators.Categories
 {
     public class CategoryModelValidator : AbstractValidator<CategoryModel>
     {

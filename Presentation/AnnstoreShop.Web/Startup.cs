@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Annstore.Data;
 using Annstore.Services;
 using Annstore.Services.Catalog;
-using AnnstoreShop.Web.Areas.Admin.Mappings;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,8 +15,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Annstore.Web.Areas.Admin.Mappings;
 
-namespace AnnstoreShop.Web
+namespace Annstore.Web
 {
     public class Startup
     {

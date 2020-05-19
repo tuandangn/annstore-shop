@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{E4B121D3-CCDE-4A10-9DEF-9A36AB9F9297}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnnstoreShop.Web", "Presentation\AnnstoreShop.Web\AnnstoreShop.Web.csproj", "{EF85DD07-4B87-4CAE-A751-9CF43B4F1B80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Web", "Presentation\AnnstoreShop.Web\Annstore.Web.csproj", "{EF85DD07-4B87-4CAE-A751-9CF43B4F1B80}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{250A31DE-63B2-49A2-A198-B3C34F589C4E}"
 EndProject
@@ -17,11 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Data", "Domain\Ann
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{06F6FAD6-6521-40EC-953D-3EEB204FF669}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Annstore.Services.Tests", "Test\Annstore.Services.Tests\Annstore.Services.Tests.csproj", "{1EA0D4B6-9FE4-4D20-B378-CD31990C4DD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Services.Tests", "Test\Annstore.Services.Tests\Annstore.Services.Tests.csproj", "{1EA0D4B6-9FE4-4D20-B378-CD31990C4DD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHelper", "Test\TestHelper\TestHelper.csproj", "{41D5E3C8-0FF6-46BC-B169-62B21FBA7911}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.TestHelper", "Test\TestHelper\Annstore.TestHelper.csproj", "{41D5E3C8-0FF6-46BC-B169-62B21FBA7911}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Annstore.Web.Tests", "Test\Annstore.Web.Tests\Annstore.Web.Tests.csproj", "{8385799D-896E-4126-BAB8-54A2EF94A48E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Web.Tests", "Test\Annstore.Web.Tests\Annstore.Web.Tests.csproj", "{8385799D-896E-4126-BAB8-54A2EF94A48E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

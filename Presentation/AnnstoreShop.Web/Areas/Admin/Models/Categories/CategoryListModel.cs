@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Annstore.Core.Entities.Catalog;
 
-namespace AnnstoreShop.Web.Areas.Admin.Models.Categories
+namespace Annstore.Web.Areas.Admin.Models.Categories
 {
     [Serializable]
     public sealed class CategoryListModel

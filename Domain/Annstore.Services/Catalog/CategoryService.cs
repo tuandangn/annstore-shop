@@ -21,7 +21,7 @@ namespace Annstore.Services.Catalog
             var query = from category in _categoryRepository.Table
                         select category;
 
-            var result = await query.ToListAsync();
+            var result = await query.ToListAsync().ConfigureAwait(false);
 
             return result;
         }

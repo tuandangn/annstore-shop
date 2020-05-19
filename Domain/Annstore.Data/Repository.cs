@@ -24,7 +24,8 @@ namespace Annstore.Data
         public async ValueTask<T> InsertAsync(T entity)
         {
             var result = await _dbContext.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync()
+                .ConfigureAwait(false);
 
             return result.Entity;
         }
@@ -32,7 +33,8 @@ namespace Annstore.Data
         public async ValueTask<T> UpdateAsync(T entity)
         {
             var result = _dbContext.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync()
+                .ConfigureAwait(false);
 
             return result.Entity;
         }
@@ -40,7 +42,8 @@ namespace Annstore.Data
         public async Task DeleteAsync(T entity)
         {
             _dbContext.Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync()
+                .ConfigureAwait(false);
         }
     }
 }

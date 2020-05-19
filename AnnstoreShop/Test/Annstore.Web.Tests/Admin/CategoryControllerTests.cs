@@ -36,7 +36,7 @@ namespace Annstore.Web.Tests.Admin
             var result = await categoryController.List();
 
             var viewResult = Assert.IsType<ViewResult>(result);
-            Assert.Equal(availableCategories, ((CategoryListModel) viewResult.Model).Categories);
+            Assert.Equal(availableCategories.Count, ((CategoryListModel) viewResult.Model).Categories.Count);
         }
     }
 }

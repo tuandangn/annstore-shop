@@ -9,9 +9,9 @@ namespace AnnstoreShop.Web.Areas.Admin.Models.Categories
     {
         public CategoryListModel()
         {
-            Categories = new List<Category>();
+            Categories = new List<CategorySimpleModel>();
         }
 
-        public IList<Category> Categories { get; set; }
+        public IList<CategorySimpleModel> Categories { get; set; }
     }
 }

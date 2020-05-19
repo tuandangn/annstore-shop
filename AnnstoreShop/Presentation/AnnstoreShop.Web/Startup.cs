@@ -42,6 +42,12 @@ namespace AnnstoreShop.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseStatusCodePages();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Errors");
+                app.UseHsts();
             }
 
             app.UseStaticFiles();

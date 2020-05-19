@@ -1,4 +1,4 @@
-﻿namespace AnnstoreShop.Web.Areas
+﻿namespace Annstore.Web.Areas
 {
     public static class AreaNames
     {

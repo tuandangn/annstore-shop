@@ -1,14 +1,13 @@
-﻿using System;
-using AnnstoreShop.Web.Areas.Admin.Models.Categories;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Annstore.Services.Catalog;
 using System.Linq;
 using AutoMapper;
 using Annstore.Core.Entities.Catalog;
-using AnnstoreShop.Web.Areas.Admin.Infrastructure;
+using Annstore.Web.Areas.Admin.Models.Categories;
+using Annstore.Web.Areas.Admin.Infrastructure;
 
-namespace AnnstoreShop.Web.Areas.Admin.Controllers
+namespace Annstore.Web.Areas.Admin.Controllers
 {
     [Area(AreaNames.Admin)]
     public sealed class CategoryController : Controller
@@ -59,7 +58,7 @@ namespace AnnstoreShop.Web.Areas.Admin.Controllers
             if (category == null)
                 return RedirectToAction(nameof(List));
 
-            category = _mapper.Map<CategoryModel, Category>(model, category);
+            category = _mapper.Map(model, category);
             await _categoryService.UpdateCategoryAsync(category);
 
             TempData[AdminDefaults.SuccessMessage] = "Chỉnh sửa danh mục thành công!";

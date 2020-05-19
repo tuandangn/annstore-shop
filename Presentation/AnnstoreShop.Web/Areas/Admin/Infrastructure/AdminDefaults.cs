@@ -1,4 +1,4 @@
-﻿namespace AnnstoreShop.Web.Areas.Admin.Infrastructure
+﻿namespace Annstore.Web.Areas.Admin.Infrastructure
 {
     public static class AdminDefaults
     {

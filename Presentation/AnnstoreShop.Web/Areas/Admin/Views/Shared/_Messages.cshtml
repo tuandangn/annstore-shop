@@ -1,0 +1,12 @@
+﻿@if (TempData[AdminDefaults.ErrorMessage] != null)
+{
+    <div class="alert alert-danger">
+        @TempData[AdminDefaults.ErrorMessage]
+    </div>
+}
+@if (TempData[AdminDefaults.SuccessMessage] != null)
+{
+    <div class="alert alert-info">
+        @TempData[AdminDefaults.SuccessMessage]
+    </div>
+}

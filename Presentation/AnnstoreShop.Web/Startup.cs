@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Annstore.Data;
 using Annstore.Services;
 using Annstore.Services.Catalog;
+using AnnstoreShop.Web.Areas.Admin.Mappings;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 namespace AnnstoreShop.Web
 {
@@ -33,7 +37,20 @@ namespace AnnstoreShop.Web
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICategoryService, CategoryService>();
 
-            services.AddMvc();
+            //auto mapper
+            var mapperConfiguration = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile<AdminModelProfile>();
+            });
+            var mapper = mapperConfiguration.CreateMapper();
+            services.AddSingleton(mapper);
+
+            services.AddMvc()
+                .AddFluentValidation(opts =>
+                {
+                    opts.RegisterValidatorsFromAssembly(typeof(Startup).Assembly);
+                    opts.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

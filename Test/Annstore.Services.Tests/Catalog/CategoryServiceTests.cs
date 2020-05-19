@@ -50,17 +50,17 @@ namespace Annstore.Services.Tests.Catalog
         }
         #endregion
 
-        #region UpdateCategory
+        #region UpdateCategoryAsync
         [Fact]
-        public async Task UpdateCategory_CategoryIsNull_ThrowArgumentNullException()
+        public async Task UpdateCategoryAsync_CategoryIsNull_ThrowArgumentNullException()
         {
             var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.UpdateCategory(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.UpdateCategoryAsync(null));
         }
 
         [Fact]
-        public async Task UpdateCategory_CategoryIsNotNull_UpdateCategory()
+        public async Task UpdateCategoryAsync_CategoryIsNotNull_UpdateCategory()
         {
             var category = new Category();
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
@@ -69,7 +69,34 @@ namespace Annstore.Services.Tests.Catalog
                 .Verifiable();
             var categoryService = new CategoryService(categoryRepositoryMock.Object);
 
-            var result = await categoryService.UpdateCategory(category);
+            var result = await categoryService.UpdateCategoryAsync(category);
+
+            Assert.Equal(category, result);
+            categoryRepositoryMock.Verify();
+        }
+        #endregion
+
+        #region CreateCategoryAsync
+
+        [Fact]
+        public async Task CreateCategoryAsync_CategoryIsNull_ThrowArgumentNullException()
+        {
+            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.CreateCategoryAsync(null));
+        }
+
+        [Fact]
+        public async Task CreateCategoryAsync_CategoryIsNotNull_InsertCategory()
+        {
+            var category = new Category();
+            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            categoryRepositoryMock.Setup(r => r.InsertAsync(category))
+                .ReturnsAsync(category)
+                .Verifiable();
+            var categoryService = new CategoryService(categoryRepositoryMock.Object);
+
+            var result = await categoryService.CreateCategoryAsync(category);
 
             Assert.Equal(category, result);
             categoryRepositoryMock.Verify();

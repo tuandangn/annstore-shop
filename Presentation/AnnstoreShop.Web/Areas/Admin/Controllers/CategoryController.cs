@@ -15,7 +15,7 @@ namespace AnnstoreShop.Web.Areas.Admin.Controllers
     {
         private readonly ICategoryService _categoryService;
         private readonly IMapper _mapper;
-        
+
         public CategoryController(ICategoryService categoryService, IMapper mapper)
         {
             _categoryService = categoryService;
@@ -40,7 +40,7 @@ namespace AnnstoreShop.Web.Areas.Admin.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var category = await _categoryService.GetCategoryByIdAsync(id);
-            if(category == null)
+            if (category == null)
                 return RedirectToAction(nameof(List));
 
             var model = _mapper.Map<CategoryModel>(category);
@@ -59,14 +59,48 @@ namespace AnnstoreShop.Web.Areas.Admin.Controllers
             if (category == null)
                 return RedirectToAction(nameof(List));
 
-            category = _mapper.Map<CategoryModel, Category>(model, category);            
-            await _categoryService.UpdateCategory(category);
+            category = _mapper.Map<CategoryModel, Category>(model, category);
+            await _categoryService.UpdateCategoryAsync(category);
 
-            TempData[AdminDefaults.SuccessMessage] = $"Chỉnh sửa danh mục {category.Name} thành công!";
+            TempData[AdminDefaults.SuccessMessage] = "Chỉnh sửa danh mục thành công!";
 
             return RedirectToAction(nameof(List));
         }
 
-        public IActionResult Create() => View();
+        public IActionResult Create()
+        {
+            var model = new CategoryModel();
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CategoryModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var category = _mapper.Map<Category>(model);
+            await _categoryService.CreateCategoryAsync(category);
+
+            TempData[AdminDefaults.SuccessMessage] = "Thêm danh mục mới thành công!";
+
+            return RedirectToAction(nameof(List));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var category = await _categoryService.GetCategoryByIdAsync(id);
+            if (category == null)
+                return RedirectToAction(nameof(List));
+
+            await _categoryService.DeleteCategoryAsync(category);
+
+            TempData[AdminDefaults.SuccessMessage] = "Xóa danh mục thành công";
+
+            return RedirectToAction(nameof(List));
+        }
     }
 }

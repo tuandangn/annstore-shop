@@ -6,6 +6,10 @@ namespace Annstore.Services.Catalog
 {
     public interface ICategoryService
     {
-        ValueTask<List<Category>> GetCategories();
+        ValueTask<Category> GetCategoryByIdAsync(int id);
+
+        ValueTask<List<Category>> GetCategoriesAsync();
+
+        Task<Category> UpdateCategory(Category category);
     }
 }

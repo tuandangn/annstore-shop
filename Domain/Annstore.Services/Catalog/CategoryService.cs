@@ -34,7 +34,7 @@ namespace Annstore.Services.Catalog
             return category;
         }
 
-        public async Task<Category> UpdateCategory(Category category)
+        public async Task<Category> UpdateCategoryAsync(Category category)
         {
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
@@ -42,6 +42,24 @@ namespace Annstore.Services.Catalog
             var result = await _categoryRepository.UpdateAsync(category).ConfigureAwait(false);
 
             return result;
+        }
+
+        public async Task<Category> CreateCategoryAsync(Category category)
+        {
+            if (category == null)
+                throw new ArgumentNullException(nameof(category));
+
+            var result = await _categoryRepository.InsertAsync(category).ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task DeleteCategoryAsync(Category category)
+        {
+            if (category == null)
+                throw new ArgumentNullException(nameof(category));
+
+            await _categoryRepository.DeleteAsync(category).ConfigureAwait(false);
         }
     }
 }

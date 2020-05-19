@@ -10,6 +10,10 @@ namespace Annstore.Services.Catalog
 
         ValueTask<List<Category>> GetCategoriesAsync();
 
-        Task<Category> UpdateCategory(Category category);
+        Task<Category> UpdateCategoryAsync(Category category);
+
+        Task<Category> CreateCategoryAsync(Category category);
+
+        Task DeleteCategoryAsync(Category category);
     }
 }

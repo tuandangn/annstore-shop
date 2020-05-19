@@ -1,12 +1,23 @@
 ﻿@if (TempData[AdminDefaults.ErrorMessage] != null)
 {
-    <div class="alert alert-danger">
+    <div class="alert alert-danger temp-message">
         @TempData[AdminDefaults.ErrorMessage]
     </div>
 }
 @if (TempData[AdminDefaults.SuccessMessage] != null)
 {
-    <div class="alert alert-info">
+    <div class="alert alert-info temp-message">
         @TempData[AdminDefaults.SuccessMessage]
     </div>
+}
+@if (TempData[AdminDefaults.ErrorMessage] != null || TempData[AdminDefaults.SuccessMessage] != null)
+{
+    <script>
+        $(function () {
+            const timeoutId = setTimeout(() => {
+                $('.temp-message').remove();
+                clearTimeout(timeoutId);
+            }, 3000);
+        });
+    </script>
 }

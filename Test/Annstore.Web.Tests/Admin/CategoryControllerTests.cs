@@ -5,6 +5,7 @@ using Annstore.Core.Entities.Catalog;
 using Annstore.Data;
 using Annstore.Services.Catalog;
 using Annstore.Web.Areas.Admin.Controllers;
+using Annstore.Web.Areas.Admin.Factories;
 using Annstore.Web.Areas.Admin.Models.Categories;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,7 @@ namespace Annstore.Web.Tests.Admin
         [Fact]
         public void Index_RedirectToList()
         {
-            var categoryController = new CategoryController(Mock.Of<ICategoryService>(), Mock.Of<IMapper>());
+            var categoryController = new CategoryController(Mock.Of<ICategoryService>(), Mock.Of<IMapper>(), Mock.Of<ICategoryModelFactory>());
 
             var redirectResult = categoryController.Index();
 
@@ -37,7 +38,7 @@ namespace Annstore.Web.Tests.Admin
             var categoryServiceMock = new Mock<ICategoryService>();
             categoryServiceMock.Setup(c => c.GetCategoriesAsync()).ReturnsAsync(availableCategories)
                 .Verifiable();
-            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>());
+            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>(), Mock.Of<ICategoryModelFactory>());
 
             var result = await categoryController.List();
 
@@ -55,7 +56,7 @@ namespace Annstore.Web.Tests.Admin
             categoryServiceMock.Setup(s => s.GetCategoryByIdAsync(It.IsAny<int>()))
                 .ReturnsAsync((Category)null)
                 .Verifiable();
-            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>());
+            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>(), Mock.Of<ICategoryModelFactory>());
 
             var result = await categoryController.Edit(0);
 
@@ -78,7 +79,11 @@ namespace Annstore.Web.Tests.Admin
             mapperMock.Setup(m => m.Map<CategoryModel>(category))
                 .Returns(model)
                 .Verifiable();
-            var categoryController = new CategoryController(categoryServiceMock.Object, mapperMock.Object);
+            var categoryModelFactoryMock = new Mock<ICategoryModelFactory>();
+            categoryModelFactoryMock.Setup(cf => cf.PrepareCategoryModelParentCategories(model))
+                .ReturnsAsync(model)
+                .Verifiable();
+            var categoryController = new CategoryController(categoryServiceMock.Object, mapperMock.Object, categoryModelFactoryMock.Object);
 
             var result = await categoryController.Edit(id);
 
@@ -86,22 +91,28 @@ namespace Annstore.Web.Tests.Admin
             Assert.Equal(model, viewResult.Model);
             mapperMock.Verify();
             categoryServiceMock.Verify();
+            categoryModelFactoryMock.Verify();
         }
         #endregion
 
         #region Edit Post
         [Fact]
-        public async Task EditPost_ModelStateIsInvalid_ReturnView()
+        public async Task EditPost_ModelStateIsInvalid_PrepareValidModel()
         {
-            var categoryController = new CategoryController(Mock.Of<ICategoryService>(), Mock.Of<IMapper>());
-            categoryController.ModelState.AddModelError("error", "error");
             var model = new CategoryModel();
+            var categoryModelFactoryMock = new Mock<ICategoryModelFactory>();
+            categoryModelFactoryMock.Setup(cf => cf.PrepareCategoryModelParentCategories(model))
+                .ReturnsAsync(model)
+                .Verifiable();
+            var categoryController = new CategoryController(Mock.Of<ICategoryService>(), Mock.Of<IMapper>(), categoryModelFactoryMock.Object);
+            categoryController.ModelState.AddModelError("error", "error");
 
             var result = await categoryController.Edit(model);
 
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.Null(viewResult.ViewName);
             Assert.Equal(model, viewResult.Model);
+            categoryModelFactoryMock.Verify();
         }
 
         [Fact]
@@ -113,7 +124,7 @@ namespace Annstore.Web.Tests.Admin
             categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(notFoundCategoryId))
                 .ReturnsAsync((Category)null)
                 .Verifiable();
-            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>());
+            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>(), Mock.Of<ICategoryModelFactory>());
 
             var result = await categoryController.Edit(model);
 
@@ -138,7 +149,7 @@ namespace Annstore.Web.Tests.Admin
             mapperMock.Setup(m => m.Map<CategoryModel, Category>(model, category))
                 .Returns(category)
                 .Verifiable();
-            var categoryController = new CategoryController(categoryServiceMock.Object, mapperMock.Object);
+            var categoryController = new CategoryController(categoryServiceMock.Object, mapperMock.Object, Mock.Of<ICategoryModelFactory>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Edit(model);
@@ -150,13 +161,34 @@ namespace Annstore.Web.Tests.Admin
         }
         #endregion
 
+        #region Create
+        [Fact]
+        public async Task Create_PrepareValidModel()
+        {
+            var categoryModelFactoryMock = new Mock<ICategoryModelFactory>();
+            categoryModelFactoryMock.Setup(cf => cf.PrepareCategoryModelParentCategories(It.IsAny<CategoryModel>()))
+                .Verifiable();
+            var categoryController = new CategoryController(Mock.Of<ICategoryService>(), Mock.Of<IMapper>(), categoryModelFactoryMock.Object);
+
+            var result = await categoryController.Create();
+
+            Assert.IsType<ViewResult>(result);
+            categoryModelFactoryMock.Verify();
+        }
+
+        #endregion
+
         #region Create Post
 
         [Fact]
         public async Task CreatePost_ModelStateIsInvalid_ReturnView()
         {
             var model = new CategoryModel();
-            var categoryController = new CategoryController(Mock.Of<ICategoryService>(), Mock.Of<IMapper>());
+            var categoryModelFactoryMock = new Mock<ICategoryModelFactory>();
+            categoryModelFactoryMock.Setup(cf => cf.PrepareCategoryModelParentCategories(model))
+                .ReturnsAsync(model)
+                .Verifiable();
+            var categoryController = new CategoryController(Mock.Of<ICategoryService>(), Mock.Of<IMapper>(), categoryModelFactoryMock.Object);
             categoryController.ModelState.AddModelError("error", "error");
 
             var result = await categoryController.Create(model);
@@ -164,6 +196,7 @@ namespace Annstore.Web.Tests.Admin
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.Null(viewResult.ViewName);
             Assert.Equal(model, viewResult.Model);
+            categoryModelFactoryMock.Verify();
         }
 
         [Fact]
@@ -179,7 +212,7 @@ namespace Annstore.Web.Tests.Admin
             categoryServiceMock.Setup(c => c.CreateCategoryAsync(category))
                 .ReturnsAsync(category)
                 .Verifiable();
-            var categoryController = new CategoryController(categoryServiceMock.Object, mapperMock.Object);
+            var categoryController = new CategoryController(categoryServiceMock.Object, mapperMock.Object, Mock.Of<ICategoryModelFactory>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Create(model);
@@ -189,33 +222,6 @@ namespace Annstore.Web.Tests.Admin
             categoryServiceMock.Verify();
             mapperMock.Verify();
         }
-        #endregion
-
-        #region DeleteCategoryAsync
-
-        [Fact]
-        public async Task DeleteCategoryAsync_CategoryIsNull_ThrowArgumentNullException()
-        {
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
-
-            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.DeleteCategoryAsync(null));
-        }
-
-        [Fact]
-        public async Task DeleteCategoryAsync_CategoryIsNotNull_DeleteCategory()
-        {
-            var category = new Category();
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
-            categoryRepositoryMock.Setup(r => r.DeleteAsync(category))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-            var categoryService = new CategoryService(categoryRepositoryMock.Object);
-
-            await categoryService.DeleteCategoryAsync(category);
-
-            categoryRepositoryMock.Verify();
-        }
-
         #endregion
 
         #region Delete
@@ -228,7 +234,7 @@ namespace Annstore.Web.Tests.Admin
             categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(notFoundCategoryId))
                 .ReturnsAsync((Category)null)
                 .Verifiable();
-            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>());
+            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>(), Mock.Of<ICategoryModelFactory>());
 
             var result = await categoryController.Delete(notFoundCategoryId);
 
@@ -248,7 +254,7 @@ namespace Annstore.Web.Tests.Admin
             categoryServiceMock.Setup(c => c.DeleteCategoryAsync(category))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
-            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>());
+            var categoryController = new CategoryController(categoryServiceMock.Object, Mock.Of<IMapper>(), Mock.Of<ICategoryModelFactory>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Delete(categoryId);

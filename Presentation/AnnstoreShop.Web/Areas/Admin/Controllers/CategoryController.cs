@@ -6,21 +6,30 @@ using AutoMapper;
 using Annstore.Core.Entities.Catalog;
 using Annstore.Web.Areas.Admin.Models.Categories;
 using Annstore.Web.Areas.Admin.Infrastructure;
+using System.Collections.Generic;
+using Annstore.Web.Areas.Admin.Factories;
 
 namespace Annstore.Web.Areas.Admin.Controllers
 {
     [Area(AreaNames.Admin)]
     public sealed class CategoryController : Controller
     {
+        #region Fields
         private readonly ICategoryService _categoryService;
         private readonly IMapper _mapper;
+        private readonly ICategoryModelFactory _categoryModelFactory;
+        #endregion
 
-        public CategoryController(ICategoryService categoryService, IMapper mapper)
+        #region Ctor
+        public CategoryController(ICategoryService categoryService, IMapper mapper, ICategoryModelFactory categoryModelFactory)
         {
             _categoryService = categoryService;
             _mapper = mapper;
+            _categoryModelFactory = categoryModelFactory;
         }
+        #endregion
 
+        #region Actions
         public IActionResult Index() => RedirectToAction(nameof(List));
 
         public async Task<IActionResult> List()
@@ -43,6 +52,8 @@ namespace Annstore.Web.Areas.Admin.Controllers
                 return RedirectToAction(nameof(List));
 
             var model = _mapper.Map<CategoryModel>(category);
+            await _categoryModelFactory.PrepareCategoryModelParentCategories(model);
+
             return View(model);
         }
 
@@ -52,8 +63,10 @@ namespace Annstore.Web.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                await _categoryModelFactory.PrepareCategoryModelParentCategories(model);
                 return View(model);
             }
+
             var category = await _categoryService.GetCategoryByIdAsync(model.Id);
             if (category == null)
                 return RedirectToAction(nameof(List));
@@ -66,9 +79,11 @@ namespace Annstore.Web.Areas.Admin.Controllers
             return RedirectToAction(nameof(List));
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var model = new CategoryModel();
+            await _categoryModelFactory.PrepareCategoryModelParentCategories(model);
+
             return View(model);
         }
 
@@ -77,7 +92,10 @@ namespace Annstore.Web.Areas.Admin.Controllers
         public async Task<IActionResult> Create(CategoryModel model)
         {
             if (!ModelState.IsValid)
+            {
+                await _categoryModelFactory.PrepareCategoryModelParentCategories(model);
                 return View(model);
+            }
 
             var category = _mapper.Map<Category>(model);
             await _categoryService.CreateCategoryAsync(category);
@@ -101,5 +119,6 @@ namespace Annstore.Web.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(List));
         }
+        #endregion
     }
 }

@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Annstore.Web.Areas.Admin.Mappings;
+using Annstore.Web.Areas.Admin.Factories;
 
 namespace Annstore.Web
 {
@@ -36,6 +37,7 @@ namespace Annstore.Web
             services.AddScoped<IDbContext, AnnstoreDbContext>();
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<ICategoryModelFactory, CategoryModelFactory>();
 
             //auto mapper
             var mapperConfiguration = new MapperConfiguration(mc =>

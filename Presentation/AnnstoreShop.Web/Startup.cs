@@ -37,7 +37,7 @@ namespace Annstore.Web
             services.AddScoped<IDbContext, AnnstoreDbContext>();
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICategoryService, CategoryService>();
-            services.AddTransient<ICategoryModelFactory, CategoryModelFactory>();
+            services.AddTransient<IAdminCategoryService, AdminCategoryService>();
 
             //auto mapper
             var mapperConfiguration = new MapperConfiguration(mc =>

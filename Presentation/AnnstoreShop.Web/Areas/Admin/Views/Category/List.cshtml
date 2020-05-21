@@ -16,43 +16,51 @@
         </div>
 
         <div class="row mt-3">
-            <table class="table">
-                <tr>
-                    <th>
-                        Danh mục
-                    </th>
-                    <th class="text-right">
-                        Thứ tự
-                    </th>
-                    <th></th>
-                </tr>
-                @foreach (var item in Model.Categories)
-                {
+            <div class="table-responsive">
+                <table class="table">
                     <tr>
-                        <td>
-                            @item.Name
-                        </td>
-                        <td class="text-right">
-                            @item.DisplayOrder
-                        </td>
-                        <td class="text-right">
-                            <form method="POST" asp-antiforgery="true" asp-action="Delete">
-                                <input type="hidden" name="id" value="@item.Id"/>
-                                <div class="btn-group" role="group" aria-label="actions">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-light">
-                                        <i class="fa fa-pencil-alt">&nbsp;</i>
-                                        <span class="sr-only">Chỉnh sửa</span>
-                                    </a>
-                                    <button class="btn btn-light" type="submit">
-                                        <i class="fa fa-trash">&nbsp;</i>
-                                        <span class="sr-only">Xóa</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </td>
+                        <th>
+                            Danh mục
+                        </th>
+                        <th>
+                            Breadcrumb
+                        </th>
+                        <th class="text-right">
+                            Thứ tự
+                        </th>
+                        <th></th>
                     </tr>
-                }
-            </table>
+                    @foreach (var item in Model.Categories)
+                    {
+                        <tr>
+                            <td>
+                                @item.Name
+                            </td>
+                            <td>
+                                @item.Breadcrumb
+                            </td>
+                            <td class="text-right">
+                                @item.DisplayOrder
+                            </td>
+                            <td class="text-right">
+                                <form method="POST" asp-antiforgery="true" asp-action="Delete">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <div class="btn-group" role="group" aria-label="actions">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-light">
+                                            <i class="fa fa-pencil-alt">&nbsp;</i>
+                                            <span class="sr-only">Chỉnh sửa</span>
+                                        </a>
+                                        <button class="btn btn-light" type="submit">
+                                            <i class="fa fa-trash">&nbsp;</i>
+                                            <span class="sr-only">Xóa</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
         </div>
     </div>
 </div>

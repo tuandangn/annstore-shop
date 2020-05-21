@@ -4,6 +4,8 @@ using Annstore.Web.Areas.Admin.Models.Categories;
 using Annstore.Web.Areas.Admin.Infrastructure;
 using Annstore.Web.Areas.Admin.Factories;
 using Annstore.Web.Infrastructure;
+using Microsoft.Extensions.Options;
+using Annstore.Web.Areas.Admin.Services.Category.Options;
 
 namespace Annstore.Web.Areas.Admin.Controllers
 {
@@ -12,12 +14,15 @@ namespace Annstore.Web.Areas.Admin.Controllers
     {
         #region Fields
         private readonly IAdminCategoryService _adminCategoryService;
+        private readonly IOptionsSnapshot<CategorySettings> _categorySettingsSnapshot;
+
         #endregion
 
         #region Ctor
-        public CategoryController(IAdminCategoryService adminCategoryService)
+        public CategoryController(IAdminCategoryService adminCategoryService, IOptionsSnapshot<CategorySettings> categorySettingsSnapshot)
         {
             _adminCategoryService = adminCategoryService;
+            _categorySettingsSnapshot = categorySettingsSnapshot;
         }
         #endregion
 
@@ -26,7 +31,15 @@ namespace Annstore.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> List()
         {
-            var model = await _adminCategoryService.GetCategoryListModelAsync();
+            //prepare list options
+            var categorySettings = _categorySettingsSnapshot.Value;
+            CategoryListOptions options = default(CategoryListOptions);
+            options.PrepareBreadcrumb = true;
+            options.BreadcrumbSeparator = categorySettings.AdminBreadcrumbSeparator;
+            options.BreadcrumbDeepLevel = categorySettings.AdminBreadcrumbDeepLevel;
+            options.BreadcrumbParentOnly = categorySettings.AdminBreadcrumbParentOnly;
+
+            var model = await _adminCategoryService.GetCategoryListModelAsync(options);
 
             return View(model);
         }

@@ -2,10 +2,14 @@
 using Annstore.Services.Catalog;
 using Annstore.Web.Areas.Admin.Infrastructure;
 using Annstore.Web.Areas.Admin.Models.Categories;
+using Annstore.Web.Areas.Admin.Services.Category.Options;
 using Annstore.Web.Infrastructure;
 using AutoMapper;
+using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Annstore.Web.Areas.Admin.Factories
@@ -15,16 +19,45 @@ namespace Annstore.Web.Areas.Admin.Factories
         private readonly ICategoryService _categoryService;
         private readonly IMapper _mapper;
 
+        //*TODO*
+        private const string BREADCRUMB_FORMAT = "{0} {1} ";
+
         public AdminCategoryService(ICategoryService categoryService, IMapper mapper)
         {
             _categoryService = categoryService;
             _mapper = mapper;
         }
 
-        public async Task<CategoryListModel> GetCategoryListModelAsync()
+        public async Task<CategoryListModel> GetCategoryListModelAsync(CategoryListOptions options)
         {
             var categories = await _categoryService.GetCategoriesAsync();
-            var categoryModels = categories.Select(category => _mapper.Map<CategorySimpleModel>(category)).ToList();
+            var categoryModels = new List<CategorySimpleModel>();
+            foreach (var category in categories)
+            {
+                var simpleModel = _mapper.Map<CategorySimpleModel>(category);
+                if (options.PrepareBreadcrumb)
+                {
+                    Category targetBreadcrumb = null;
+                    if (options.BreadcrumbParentOnly)
+                    {
+                        var parentCategory = await _categoryService.GetCategoryByIdAsync(category.ParentId);
+                        if (parentCategory != null)
+                        {
+                            targetBreadcrumb = parentCategory;
+                        }
+                    }
+                    else
+                    {
+                        targetBreadcrumb = category;
+                    }
+                    if (targetBreadcrumb != null)
+                    {
+                        var breadcrumb = await GetCategoryBreadcrumbStringAsync(targetBreadcrumb, options.BreadcrumbDeepLevel, options.BreadcrumbSeparator);
+                        simpleModel.Breadcrumb = breadcrumb;
+                    }
+                }
+                categoryModels.Add(simpleModel);
+            }
 
             var model = new CategoryListModel
             {
@@ -121,11 +154,35 @@ namespace Annstore.Web.Areas.Admin.Factories
                 await _categoryService.DeleteCategoryAsync(category);
 
                 return AppResponse.SuccessResult(AdminMessages.Category.DeleteCategorySuccess);
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 //*TODO*
                 return AppResponse.ErrorResult(AdminMessages.Category.DeleteCategoryError);
             }
+        }
+
+        public async Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator)
+        {
+            if (category == null)
+                throw new ArgumentNullException(nameof(category));
+
+            var breadcrumb = await _categoryService.GetCategoryBreadcrumbAsync(category, deepLevel);
+            var breadcrumbStringBuilder = new StringBuilder();
+            for (var i = 0; i < breadcrumb.Count; i++)
+            {
+                var item = breadcrumb[i];
+                if (i != breadcrumb.Count - 1)
+                {
+                    breadcrumbStringBuilder.AppendFormat(BREADCRUMB_FORMAT, item.Name, separator);
+                }
+                else
+                {
+                    breadcrumbStringBuilder.Append(item.Name);
+                }
+            }
+
+            return breadcrumbStringBuilder.ToString();
         }
     }
 }

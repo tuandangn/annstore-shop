@@ -61,5 +61,34 @@ namespace Annstore.Services.Catalog
 
             await _categoryRepository.DeleteAsync(category).ConfigureAwait(false);
         }
+
+        public async Task<List<Category>> GetCategoryBreadcrumbAsync(Category category, int deepLevel)
+        {
+            if (category == null)
+                throw new ArgumentNullException(nameof(category));
+            if (deepLevel < 0)
+                throw new ArgumentException("Deep level cannot less than 0");
+
+            var breadcrumb = new List<Category> { category };
+            if (deepLevel == 0 || category.ParentId == 0)
+                return breadcrumb;
+
+            await _GetCategoryBreadcrum(breadcrumb, category, 0, deepLevel);
+            breadcrumb.Reverse();
+            return breadcrumb;
+        }
+
+        private async Task<List<Category>> _GetCategoryBreadcrum(List<Category> breadcrumb, Category category, int currentLevel, int maxLevel)
+        {
+            if (category.ParentId == 0 || currentLevel == maxLevel)
+                return breadcrumb;
+
+            var parentCategory = await _categoryRepository.FindByIdAsync(category.ParentId);
+            if (parentCategory == null)
+                return breadcrumb;
+            breadcrumb.Add(parentCategory);
+            await _GetCategoryBreadcrum(breadcrumb, parentCategory, currentLevel + 1, maxLevel);
+            return breadcrumb;
+        }
     }
 }

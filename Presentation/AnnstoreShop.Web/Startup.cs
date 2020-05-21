@@ -17,6 +17,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Annstore.Web.Areas.Admin.Mappings;
 using Annstore.Web.Areas.Admin.Factories;
+using Annstore.Web.Infrastructure;
 
 namespace Annstore.Web
 {
@@ -53,6 +54,10 @@ namespace Annstore.Web
                     opts.RegisterValidatorsFromAssembly(typeof(Startup).Assembly);
                     opts.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
                 });
+
+            //settings
+            var categorySettingsSection = _configuration.GetSection("CategorySettings");
+            services.Configure<CategorySettings>(categorySettingsSection);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\Annstore.Data\Annstore.Data.csproj" />
     <ProjectReference Include="..\Annstore.Core\Annstore.Core.csproj" />
-    <ProjectReference Include="..\Annstore.Data\Annstore.Data.csproj" />
   </ItemGroup>
 
 </Project>

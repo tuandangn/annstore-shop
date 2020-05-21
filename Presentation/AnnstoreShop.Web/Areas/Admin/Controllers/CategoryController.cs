@@ -1,48 +1,42 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using Annstore.Services.Catalog;
-using System.Linq;
-using AutoMapper;
-using Annstore.Core.Entities.Catalog;
 using Annstore.Web.Areas.Admin.Models.Categories;
 using Annstore.Web.Areas.Admin.Infrastructure;
+using Annstore.Web.Areas.Admin.Factories;
+using Annstore.Web.Infrastructure;
 
 namespace Annstore.Web.Areas.Admin.Controllers
 {
     [Area(AreaNames.Admin)]
     public sealed class CategoryController : Controller
     {
-        private readonly ICategoryService _categoryService;
-        private readonly IMapper _mapper;
+        #region Fields
+        private readonly IAdminCategoryService _adminCategoryService;
+        #endregion
 
-        public CategoryController(ICategoryService categoryService, IMapper mapper)
+        #region Ctor
+        public CategoryController(IAdminCategoryService adminCategoryService)
         {
-            _categoryService = categoryService;
-            _mapper = mapper;
+            _adminCategoryService = adminCategoryService;
         }
+        #endregion
 
+        #region Actions
         public IActionResult Index() => RedirectToAction(nameof(List));
 
         public async Task<IActionResult> List()
         {
-            var categories = await _categoryService.GetCategoriesAsync();
-            var categoryModels = categories.Select(category => _mapper.Map<CategorySimpleModel>(category)).ToList();
-
-            var model = new CategoryListModel
-            {
-                Categories = categoryModels
-            };
+            var model = await _adminCategoryService.GetCategoryListModelAsync();
 
             return View(model);
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var category = await _categoryService.GetCategoryByIdAsync(id);
-            if (category == null)
+            var model = await _adminCategoryService.GetCategoryModelAsync(id);
+            if (model == null)
                 return RedirectToAction(nameof(List));
 
-            var model = _mapper.Map<CategoryModel>(category);
             return View(model);
         }
 
@@ -50,25 +44,32 @@ namespace Annstore.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(CategoryModel model)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                return View(model);
+                var request = new AppRequest<CategoryModel>(model);
+                var response = await _adminCategoryService.UpdateCategoryAsync(request);
+
+                if (response.Success)
+                {
+                    TempData[AdminDefaults.SuccessMessage] = AdminMessages.Category.UpdateCategorySuccess;
+                    return RedirectToAction(nameof(List));
+                }
+                else if (response.ModelIsInvalid)
+                {
+                    TempData[AdminDefaults.ErrorMessage] = response.Message;
+                    return RedirectToAction(nameof(List));
+                }
+                ModelState.AddModelError(string.Empty, response.Message);
             }
-            var category = await _categoryService.GetCategoryByIdAsync(model.Id);
-            if (category == null)
-                return RedirectToAction(nameof(List));
-
-            category = _mapper.Map(model, category);
-            await _categoryService.UpdateCategoryAsync(category);
-
-            TempData[AdminDefaults.SuccessMessage] = "Chỉnh sửa danh mục thành công!";
-
-            return RedirectToAction(nameof(List));
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model);
+            return View(model);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var model = new CategoryModel();
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model);
+
             return View(model);
         }
 
@@ -76,30 +77,49 @@ namespace Annstore.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CategoryModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            if (ModelState.IsValid)
+            {
+                var request = new AppRequest<CategoryModel>(model);
+                var response = await _adminCategoryService.CreateCategoryAsync(request);
 
-            var category = _mapper.Map<Category>(model);
-            await _categoryService.CreateCategoryAsync(category);
+                if (response.Success)
+                {
+                    TempData[AdminDefaults.SuccessMessage] = AdminMessages.Category.CreateCategorySuccess;
+                    return RedirectToAction(nameof(List));
+                }
+                else if (response.ModelIsInvalid)
+                {
+                    TempData[AdminDefaults.ErrorMessage] = response.Message;
+                    return RedirectToAction(nameof(List));
+                }
+                ModelState.AddModelError(string.Empty, response.Message);
+            }
 
-            TempData[AdminDefaults.SuccessMessage] = "Thêm danh mục mới thành công!";
-
-            return RedirectToAction(nameof(List));
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model);
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var category = await _categoryService.GetCategoryByIdAsync(id);
-            if (category == null)
-                return RedirectToAction(nameof(List));
+            var request = new AppRequest<int>(id);
+            var response = await _adminCategoryService.DeleteCategoryAsync(request);
 
-            await _categoryService.DeleteCategoryAsync(category);
-
-            TempData[AdminDefaults.SuccessMessage] = "Xóa danh mục thành công";
-
+            if (response.Success)
+            {
+                TempData[AdminDefaults.SuccessMessage] = AdminMessages.Category.DeleteCategorySuccess;
+            }
+            else if (response.ModelIsInvalid)
+            {
+                TempData[AdminDefaults.ErrorMessage] = response.Message;
+            }
+            else
+            {
+                TempData[AdminDefaults.ErrorMessage] = response.Message;
+            }
             return RedirectToAction(nameof(List));
         }
+        #endregion
     }
 }

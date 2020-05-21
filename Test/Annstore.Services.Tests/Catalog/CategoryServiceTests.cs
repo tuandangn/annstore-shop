@@ -102,5 +102,32 @@ namespace Annstore.Services.Tests.Catalog
             categoryRepositoryMock.Verify();
         }
         #endregion
+
+        #region DeleteCategoryAsync
+
+        [Fact]
+        public async Task DeleteCategoryAsync_CategoryIsNull_ThrowArgumentNullException()
+        {
+            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.DeleteCategoryAsync(null));
+        }
+
+        [Fact]
+        public async Task DeleteCategoryAsync_CategoryIsNotNull_DeleteCategory()
+        {
+            var category = new Category();
+            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            categoryRepositoryMock.Setup(r => r.DeleteAsync(category))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            var categoryService = new CategoryService(categoryRepositoryMock.Object);
+
+            await categoryService.DeleteCategoryAsync(category);
+
+            categoryRepositoryMock.Verify();
+        }
+
+        #endregion
     }
 }

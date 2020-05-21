@@ -9,7 +9,8 @@ namespace Annstore.Web.Areas.Admin.Mappings
         public AdminModelProfile()
         {
             CreateMap<Category, CategorySimpleModel>();
-            CreateMap<Category, CategoryModel>();
+            CreateMap<Category, CategoryModel>()
+                .ForMember(model => model.ParentableCategories, config => config.Ignore());
             CreateMap<CategoryModel, Category>();
         }
     }

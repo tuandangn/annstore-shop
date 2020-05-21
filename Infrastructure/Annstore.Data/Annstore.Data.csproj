@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Annstore.Core\Annstore.Core.csproj" />
+    <ProjectReference Include="..\..\Domain\Annstore.Core\Annstore.Core.csproj" />
   </ItemGroup>
 
 </Project>

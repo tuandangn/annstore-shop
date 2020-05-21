@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Annstore.Data.Mappings
+namespace Annstore.Data.Mappings.Catalog
 {
     public class CategoryMap : IEntityTypeConfiguration<Category>
     {

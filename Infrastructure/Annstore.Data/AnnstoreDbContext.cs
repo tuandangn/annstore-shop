@@ -1,5 +1,4 @@
-﻿using Annstore.Core.Entities;
-using Annstore.Core.Entities.Catalog;
+﻿using Annstore.Core.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
 
 namespace Annstore.Data

@@ -3,14 +3,13 @@
 namespace Annstore.Web.Areas.Admin.Services.Category.Options
 {
     [Serializable]
-    public struct CategoryListOptions
+    public class CategoryListOptions
     {
-        public bool PrepareBreadcrumb { get; set; }
+        public CategoryListOptions()
+        {
+            Breadcrumb = new BreadcrumbOptions();
+        }
 
-        public string BreadcrumbSeparator { get; set; }
-
-        public int BreadcrumbDeepLevel { get; set; }
-
-        public bool BreadcrumbParentOnly { get; set; }
+        public BreadcrumbOptions Breadcrumb { get; set; }
     }
 }

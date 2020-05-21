@@ -5,10 +5,8 @@ using Annstore.Web.Areas.Admin.Models.Categories;
 using Annstore.Web.Areas.Admin.Services.Category.Options;
 using Annstore.Web.Infrastructure;
 using AutoMapper;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,26 +33,13 @@ namespace Annstore.Web.Areas.Admin.Factories
             foreach (var category in categories)
             {
                 var simpleModel = _mapper.Map<CategorySimpleModel>(category);
-                if (options.PrepareBreadcrumb)
+
+                //breadcrumb
+                var breadcrumbOpts = options.Breadcrumb;
+                if (breadcrumbOpts.Enable)
                 {
-                    Category targetBreadcrumb = null;
-                    if (options.BreadcrumbParentOnly)
-                    {
-                        var parentCategory = await _categoryService.GetCategoryByIdAsync(category.ParentId);
-                        if (parentCategory != null)
-                        {
-                            targetBreadcrumb = parentCategory;
-                        }
-                    }
-                    else
-                    {
-                        targetBreadcrumb = category;
-                    }
-                    if (targetBreadcrumb != null)
-                    {
-                        var breadcrumb = await GetCategoryBreadcrumbStringAsync(targetBreadcrumb, options.BreadcrumbDeepLevel, options.BreadcrumbSeparator);
-                        simpleModel.Breadcrumb = breadcrumb;
-                    }
+                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget);
+                    simpleModel.Breadcrumb = breadcrumb;
                 }
                 categoryModels.Add(simpleModel);
             }
@@ -67,14 +52,14 @@ namespace Annstore.Web.Areas.Admin.Factories
             return model;
         }
 
-        public async Task<CategoryModel> GetCategoryModelAsync(int id)
+        public async Task<CategoryModel> GetCategoryModelAsync(int id, BreadcrumbOptions breadcrumbOpts)
         {
             var category = await _categoryService.GetCategoryByIdAsync(id);
             if (category == null)
                 return null;
 
             var model = _mapper.Map<CategoryModel>(category);
-            await PrepareCategoryModelParentCategoriesAsync(model);
+            await PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOpts);
 
             return model;
         }
@@ -97,7 +82,7 @@ namespace Annstore.Web.Areas.Admin.Factories
             }
         }
 
-        public async Task<CategoryModel> PrepareCategoryModelParentCategoriesAsync(CategoryModel model)
+        public async Task<CategoryModel> PrepareCategoryModelParentCategoriesAsync(CategoryModel model, BreadcrumbOptions breadcrumbOpts)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
@@ -109,9 +94,20 @@ namespace Annstore.Web.Areas.Admin.Factories
                 if (removeItemIndex >= 0)
                     categories.RemoveAt(removeItemIndex);
             }
-            var parentableCategories = categories
-                .Select(c => _mapper.Map<CategorySimpleModel>(c))
-                .ToList();
+            var parentableCategories = new List<CategorySimpleModel>();
+            foreach (var category in categories)
+            {
+                var categoryModel = _mapper.Map<CategorySimpleModel>(category);
+
+                //breadcrumb
+                if (breadcrumbOpts.Enable)
+                {
+                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget);
+                    categoryModel.Breadcrumb = breadcrumb;
+                }
+
+                parentableCategories.Add(categoryModel);
+            }
             model.ParentableCategories = parentableCategories;
 
             return model;
@@ -162,12 +158,22 @@ namespace Annstore.Web.Areas.Admin.Factories
             }
         }
 
-        public async Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator)
+        public async Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator, bool useParentAsTarget)
         {
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
 
-            var breadcrumb = await _categoryService.GetCategoryBreadcrumbAsync(category, deepLevel);
+            var target = category;
+            if (useParentAsTarget)
+            {
+                var parentCategory = await _categoryService.GetCategoryByIdAsync(category.ParentId);
+                if (parentCategory != null)
+                {
+                    target = parentCategory;
+                }
+            }
+
+            var breadcrumb = await _categoryService.GetCategoryBreadcrumbAsync(target, deepLevel);
             var breadcrumbStringBuilder = new StringBuilder();
             for (var i = 0; i < breadcrumb.Count; i++)
             {

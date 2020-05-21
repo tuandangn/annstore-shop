@@ -8,11 +8,11 @@ namespace Annstore.Web.Areas.Admin.Factories
 {
     public interface IAdminCategoryService
     {
-        Task<CategoryModel> GetCategoryModelAsync(int id);
+        Task<CategoryModel> GetCategoryModelAsync(int id, BreadcrumbOptions breadcrumbOpts);
 
         Task<CategoryListModel> GetCategoryListModelAsync(CategoryListOptions options);
 
-        Task<CategoryModel> PrepareCategoryModelParentCategoriesAsync(CategoryModel model);
+        Task<CategoryModel> PrepareCategoryModelParentCategoriesAsync(CategoryModel model, BreadcrumbOptions breadcrumbOpts);
 
         Task<AppResponse<Category>> CreateCategoryAsync(AppRequest<CategoryModel> request);
 
@@ -20,6 +20,6 @@ namespace Annstore.Web.Areas.Admin.Factories
 
         Task<AppResponse> DeleteCategoryAsync(AppRequest<int> request);
 
-        Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator);
+        Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator, bool useParenAsTarget);
     }
 }

@@ -19,6 +19,9 @@ namespace Annstore.Web.Areas.Admin.Mappings
 
             //user
             CreateMap<AppUser, UserSimpleModel>();
+            CreateMap<AppUser, UserModel>();
+            CreateMap<UserModel, AppUser>()
+                .ForMember(user => user.UserName, config => config.MapFrom(model => model.Email));
         }
     }
 }

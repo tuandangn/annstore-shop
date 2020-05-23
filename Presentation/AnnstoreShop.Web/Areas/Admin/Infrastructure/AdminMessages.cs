@@ -18,5 +18,22 @@
 
             public const string DeleteCategorySuccess = "Xóa danh mục thành công";
         }
+
+        public static class User
+        {
+            public const string UserIsNotFound = "Không tìm thấy người dùng";
+
+            public const string CreateUserError = "Thêm người dùng mới thất bại";
+
+            public const string UpdateUserError = "Chỉnh sửa người dùng thất bại";
+
+            public const string DeleteUserError = "Xóa người dùng thất bại";
+
+            public const string CreateUserSuccess = "Thêm người dùng mới thành công";
+
+            public const string UpdateUserSuccess = "Chỉnh sửa người dùng thành công";
+
+            public const string DeleteUserSuccess = "Xóa người dùng thành công";
+        }
     }
 }

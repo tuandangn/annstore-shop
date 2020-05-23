@@ -15,8 +15,8 @@ using Annstore.Core.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using System.Reflection;
 using Annstore.Web.Areas.Admin.Services.Categories;
-using Annstore.Services.Users;
 using Annstore.Web.Areas.Admin.Services.Users;
+using Annstore.Web.Services.Accounts;
 
 namespace Annstore.Web
 {
@@ -43,8 +43,8 @@ namespace Annstore.Web
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<IAdminCategoryService, AdminCategoryService>();
-            services.AddTransient<IUserService, UserService>();
             services.AddTransient<IAdminUserService, AdminUserService>();
+            services.AddTransient<IAccountService, AccountService>();
 
             //auto mapper
             var mapperConfiguration = new MapperConfiguration(mc =>
@@ -68,12 +68,11 @@ namespace Annstore.Web
             services.Configure<IdentityOptions>(options =>
             {
                 // Password settings.
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
                 options.Password.RequiredLength = 6;
-                options.Password.RequiredUniqueChars = 1;
 
                 // Lockout settings.
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
@@ -92,7 +91,7 @@ namespace Annstore.Web
                 options.Cookie.HttpOnly = true;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 
-                options.LoginPath = "/Account/SignIn";
+                options.LoginPath = "/Account/Login";
                 options.AccessDeniedPath = "/Account/AccessDenied";
                 options.SlidingExpiration = true;
             });
@@ -124,6 +123,10 @@ namespace Annstore.Web
                 endpoints.MapControllerRoute(
                     name: "area_default",
                     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

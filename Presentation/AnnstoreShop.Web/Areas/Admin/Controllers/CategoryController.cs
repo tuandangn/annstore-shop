@@ -9,8 +9,7 @@ using Annstore.Web.Areas.Admin.Services.Categories.Options;
 
 namespace Annstore.Web.Areas.Admin.Controllers
 {
-    [Area(AreaNames.Admin)]
-    public sealed class CategoryController : Controller
+    public sealed class CategoryController : AdminControllerBase
     {
         #region Fields
         private readonly IAdminCategoryService _adminCategoryService;

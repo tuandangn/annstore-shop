@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace Annstore.Web.Areas.Admin.Validators.Categories
 {
-    public class CategoryModelValidator : AbstractValidator<CategoryModel>
+    public sealed class CategoryModelValidator : AbstractValidator<CategoryModel>
     {
         public CategoryModelValidator()
         {

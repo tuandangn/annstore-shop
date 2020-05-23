@@ -4,16 +4,13 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>@Defaults.SiteName @AreaNames.Admin - @ViewData["title"]</title>
+    <title>@Defaults.SiteName - @ViewData["title"]</title>
 
     <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.css">
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" />
     @await RenderSectionAsync("Styles", false)
-    <partial name="_ValidateScripts"/>
 </head>
 <body>
-    <partial name="_Navbar" />
-    <partial name="_Messages" />
     <main class="container">
         @RenderBody()
     </main>

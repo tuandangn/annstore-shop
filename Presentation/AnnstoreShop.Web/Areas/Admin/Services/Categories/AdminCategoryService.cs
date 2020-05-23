@@ -28,7 +28,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
 
         public async Task<CategoryListModel> GetCategoryListModelAsync(CategoryListOptions options)
         {
-            var categories = await _categoryService.GetCategoriesAsync();
+            var categories = await _categoryService.GetCategoriesAsync().ConfigureAwait(false);
             var categoryModels = new List<CategorySimpleModel>();
             foreach (var category in categories)
             {
@@ -38,7 +38,8 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
                 var breadcrumbOpts = options.Breadcrumb;
                 if (breadcrumbOpts.Enable)
                 {
-                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget);
+                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget)
+                        .ConfigureAwait(false);
                     simpleModel.Breadcrumb = breadcrumb;
                 }
                 categoryModels.Add(simpleModel);
@@ -54,12 +55,14 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
 
         public async Task<CategoryModel> GetCategoryModelAsync(int id, BreadcrumbOptions breadcrumbOpts)
         {
-            var category = await _categoryService.GetCategoryByIdAsync(id);
+            var category = await _categoryService.GetCategoryByIdAsync(id)
+                .ConfigureAwait(false);
             if (category == null)
                 return null;
 
             var model = _mapper.Map<CategoryModel>(category);
-            await PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOpts);
+            await PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOpts)
+                .ConfigureAwait(false);
 
             return model;
         }
@@ -72,7 +75,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
             try
             {
                 var category = _mapper.Map<Category>(request.Data);
-                await _categoryService.CreateCategoryAsync(category);
+                await _categoryService.CreateCategoryAsync(category).ConfigureAwait(false);
                 return AppResponse.SuccessResult(category);
             }
             catch (Exception ex)
@@ -87,7 +90,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
-            var categories = await _categoryService.GetCategoriesAsync();
+            var categories = await _categoryService.GetCategoriesAsync().ConfigureAwait(false);
             if (model.Id != 0)
             {
                 var removeItemIndex = categories.FindIndex(c => c.Id == model.Id);
@@ -102,7 +105,8 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
                 //breadcrumb
                 if (breadcrumbOpts.Enable)
                 {
-                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget);
+                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget)
+                       .ConfigureAwait(false);
                     categoryModel.Breadcrumb = breadcrumb;
                 }
 
@@ -118,14 +122,15 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var category = await _categoryService.GetCategoryByIdAsync(request.Data.Id);
+            var category = await _categoryService.GetCategoryByIdAsync(request.Data.Id)
+                .ConfigureAwait(false);
             if (category == null)
                 return AppResponse.InvalidModelResult<Category>(AdminMessages.Category.CategoryIsNotFound);
 
             try
             {
                 category = _mapper.Map(request.Data, category);
-                await _categoryService.UpdateCategoryAsync(category);
+                await _categoryService.UpdateCategoryAsync(category).ConfigureAwait(false);
 
                 return AppResponse.SuccessResult(category);
             }
@@ -141,13 +146,13 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var category = await _categoryService.GetCategoryByIdAsync(request.Data);
+            var category = await _categoryService.GetCategoryByIdAsync(request.Data).ConfigureAwait(false);
             if (category == null)
                 return AppResponse.InvalidModelResult(AdminMessages.Category.CategoryIsNotFound);
 
             try
             {
-                await _categoryService.DeleteCategoryAsync(category);
+                await _categoryService.DeleteCategoryAsync(category).ConfigureAwait(false);
 
                 return AppResponse.SuccessResult(AdminMessages.Category.DeleteCategorySuccess);
             }
@@ -166,14 +171,16 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
             var target = category;
             if (useParentAsTarget)
             {
-                var parentCategory = await _categoryService.GetCategoryByIdAsync(category.ParentId);
+                var parentCategory = await _categoryService.GetCategoryByIdAsync(category.ParentId)
+                    .ConfigureAwait(false);
                 if (parentCategory != null)
                 {
                     target = parentCategory;
                 }
             }
 
-            var breadcrumb = await _categoryService.GetCategoryBreadcrumbAsync(target, deepLevel);
+            var breadcrumb = await _categoryService.GetCategoryBreadcrumbAsync(target, deepLevel)
+                .ConfigureAwait(false);
             var breadcrumbStringBuilder = new StringBuilder();
             for (var i = 0; i < breadcrumb.Count; i++)
             {

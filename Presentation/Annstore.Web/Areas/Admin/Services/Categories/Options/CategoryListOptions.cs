@@ -10,6 +10,10 @@ namespace Annstore.Web.Areas.Admin.Services.Categories.Options
             Breadcrumb = new BreadcrumbOptions();
         }
 
+        public int PageSize { get; set; }
+
+        public int PageNumber { get; set; }
+
         public BreadcrumbOptions Breadcrumb { get; set; }
     }
 }

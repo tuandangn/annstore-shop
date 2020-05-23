@@ -48,6 +48,31 @@ namespace Annstore.Web.Tests.Admin.Controllers
 
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.Equal(categoryListModel, viewResult.Model);
+            adminCategoryServiceMock.Verify();
+        }
+
+        [Fact]
+        public async Task List_PaginationInfoInvalid_DefaultValues()
+        {
+            var page = 0;
+            var size = -1;
+            var categoryListModel = new CategoryListModel();
+            var categorySettings = new CategorySettings { Admin = new CategorySettings.AdminCategorySettings { DefaultPageSize = 12 } };
+            var adminCategoryServiceStub = new Mock<IAdminCategoryService>();
+            adminCategoryServiceStub.Setup(c =>
+            c.GetCategoryListModelAsync(It.Is<CategoryListOptions>(opts =>
+                opts.PageSize == 12 && opts.PageNumber == 1
+            ))).ReturnsAsync(categoryListModel);
+            var categorySettingsSnapshopStub = new Mock<IOptionsSnapshot<CategorySettings>>();
+            categorySettingsSnapshopStub.Setup(csn => csn.Value)
+                .Returns(categorySettings)
+                .Verifiable();
+            var categoryController = new CategoryController(adminCategoryServiceStub.Object, categorySettingsSnapshopStub.Object);
+
+            var result = await categoryController.List(page, size);
+
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.Equal(categoryListModel, viewResult.Model);
         }
         #endregion
 
@@ -347,7 +372,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             categorySettingsSnapshotStub.Setup(c => c.Value)
                 .Returns(new CategorySettings());
 
-            return categorySettingsSnapshotStub.Object;;
+            return categorySettingsSnapshotStub.Object; ;
         }
         #endregion
     }

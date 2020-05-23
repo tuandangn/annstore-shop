@@ -20,6 +20,8 @@ namespace Annstore.Web.Infrastructure
                 Breadcrumb = new BreadcrumbSettings();
             }
 
+            public int DefaultPageSize { get; set; }
+
             public BreadcrumbSettings Breadcrumb { get; set; }
         }
 

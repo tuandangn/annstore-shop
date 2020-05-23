@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Annstore.Core.Common;
 using Annstore.Core.Entities.Catalog;
 using Annstore.Data;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace Annstore.Services.Catalog
             _categoryRepository = categoryRepository;
         }
 
-        public async ValueTask<List<Category>> GetCategoriesAsync()
+        public async Task<List<Category>> GetCategoriesAsync()
         {
             var query = from category in _categoryRepository.Table
                         select category;
@@ -27,7 +28,7 @@ namespace Annstore.Services.Catalog
             return result;
         }
 
-        public async ValueTask<Category> GetCategoryByIdAsync(int id)
+        public async Task<Category> GetCategoryByIdAsync(int id)
         {
             var category = await _categoryRepository.FindByIdAsync(id).ConfigureAwait(false);
 
@@ -89,6 +90,24 @@ namespace Annstore.Services.Catalog
             breadcrumb.Add(parentCategory);
             await _GetCategoryBreadcrum(breadcrumb, parentCategory, currentLevel + 1, maxLevel);
             return breadcrumb;
+        }
+
+        public async Task<IPagedList<Category>> GetPagedCategoriesAsync(int pageNumber, int pageSize)
+        {
+            if(pageNumber < 1)
+                throw new ArgumentException("Page number must greater than or equal 1");
+            if(pageSize <= 0)
+                throw new ArgumentException("Page size must greater than or equal 0");
+
+            var query = from category in _categoryRepository.Table
+                        orderby category.Id
+                        select category;
+            //*TODO*
+            var allCategories = await query.ToListAsync();
+            var categories = allCategories.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var result = categories.ToPagedList(pageSize, pageNumber, allCategories.Count);
+
+            return result;
         }
     }
 }

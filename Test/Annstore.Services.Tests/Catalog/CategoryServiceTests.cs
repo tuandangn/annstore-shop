@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Annstore.Core.Entities.Catalog;
@@ -211,7 +212,7 @@ namespace Annstore.Services.Tests.Catalog
                 .ReturnsAsync(parentCategory)
                 .Verifiable();
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(notFoundCategoryId))
-                .ReturnsAsync((Category) null)
+                .ReturnsAsync((Category)null)
                 .Verifiable();
             var categoryService = new CategoryService(categoryRepositoryMock.Object);
 
@@ -220,6 +221,52 @@ namespace Annstore.Services.Tests.Catalog
             Assert.Equal(2, categoryBreadcrumb.Count);
             Assert.Equal(parentCategory, categoryBreadcrumb[0]);
             Assert.Equal(category, categoryBreadcrumb[1]);
+            categoryRepositoryMock.Verify();
+        }
+
+        #endregion
+
+        #region GetPagedCategoriesAsync
+        [Fact]
+        public async Task GetPagedCategoriesAsync_PageNumberLessThanOne_ThrowArgumentException()
+        {
+            var pageNumber = 0;
+            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+
+            await Assert.ThrowsAsync<ArgumentException>(() => categoryService.GetPagedCategoriesAsync(pageNumber, int.MaxValue));
+        }
+
+        [Fact]
+        public async Task GetPagedCategoriesAsync_PageSizeLessThanOrEqualZero_ThrowArgumentException()
+        {
+            var pageSize = 0;
+            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+
+            await Assert.ThrowsAsync<ArgumentException>(() => categoryService.GetPagedCategoriesAsync(1, pageSize));
+        }
+
+        [Fact]
+        public async Task GetPagedCategoriesAsync_ReturnValidResult()
+        {
+            var pageNumber = 2;
+            var pageSize = 2;
+            var availableCategories = new List<Category>
+            {
+                new Category{Id = 1 }, new Category{Id = 2 },
+                new Category{Id = 3 }, new Category{Id = 4 },
+                new Category{Id = 5 }, new Category{Id = 6 }
+            };
+            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            categoryRepositoryMock.Setup(c => c.Table)
+                .Returns(availableCategories.ToAsync())
+                .Verifiable();
+            var categoryService = new CategoryService(categoryRepositoryMock.Object);
+
+            var result = await categoryService.GetPagedCategoriesAsync(pageNumber, pageSize);
+
+            Assert.Equal(3, result.TotalPages);
+            Assert.Equal(availableCategories.Count, result.TotalItems);
+            Assert.Equal(3, result.Items.ElementAt(0).Id);
             categoryRepositoryMock.Verify();
         }
 

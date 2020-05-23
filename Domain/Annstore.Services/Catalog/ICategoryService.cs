@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Annstore.Core.Common;
 using Annstore.Core.Entities.Catalog;
 
 namespace Annstore.Services.Catalog
 {
     public interface ICategoryService
     {
-        ValueTask<Category> GetCategoryByIdAsync(int id);
+        Task<Category> GetCategoryByIdAsync(int id);
 
-        ValueTask<List<Category>> GetCategoriesAsync();
+        Task<List<Category>> GetCategoriesAsync();
+
+        Task<IPagedList<Category>> GetPagedCategoriesAsync(int pageNumber, int pageSize);
 
         Task<Category> UpdateCategoryAsync(Category category);
 

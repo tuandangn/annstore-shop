@@ -2,22 +2,26 @@
 using System.Threading.Tasks;
 using Annstore.Web.Areas.Admin.Models.Categories;
 using Annstore.Web.Areas.Admin.Infrastructure;
-using Annstore.Web.Areas.Admin.Factories;
 using Annstore.Web.Infrastructure;
+using Microsoft.Extensions.Options;
+using Annstore.Web.Areas.Admin.Services.Categories;
+using Annstore.Web.Areas.Admin.Services.Categories.Options;
 
 namespace Annstore.Web.Areas.Admin.Controllers
 {
-    [Area(AreaNames.Admin)]
-    public sealed class CategoryController : Controller
+    public sealed class CategoryController : AdminControllerBase
     {
         #region Fields
         private readonly IAdminCategoryService _adminCategoryService;
+        private readonly IOptionsSnapshot<CategorySettings> _categorySettingsSnapshot;
+
         #endregion
 
         #region Ctor
-        public CategoryController(IAdminCategoryService adminCategoryService)
+        public CategoryController(IAdminCategoryService adminCategoryService, IOptionsSnapshot<CategorySettings> categorySettingsSnapshot)
         {
             _adminCategoryService = adminCategoryService;
+            _categorySettingsSnapshot = categorySettingsSnapshot;
         }
         #endregion
 
@@ -26,14 +30,18 @@ namespace Annstore.Web.Areas.Admin.Controllers
 
         public async Task<IActionResult> List()
         {
-            var model = await _adminCategoryService.GetCategoryListModelAsync();
+            var categorySettings = _categorySettingsSnapshot.Value;
+            var categoryListOptions = _GetCategoryListOptions(categorySettings);
+            var model = await _adminCategoryService.GetCategoryListModelAsync(categoryListOptions);
 
             return View(model);
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var model = await _adminCategoryService.GetCategoryModelAsync(id);
+            var categorySettings = _categorySettingsSnapshot.Value;
+            var breadcrumbOptions = _GetBreadcrumbOptions(categorySettings.Admin.Breadcrumb);
+            var model = await _adminCategoryService.GetCategoryModelAsync(id, breadcrumbOptions);
             if (model == null)
                 return RedirectToAction(nameof(List));
 
@@ -61,14 +69,18 @@ namespace Annstore.Web.Areas.Admin.Controllers
                 }
                 ModelState.AddModelError(string.Empty, response.Message);
             }
-            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model);
+            var categorySettings = _categorySettingsSnapshot.Value;
+            var breadcrumbOptions = _GetBreadcrumbOptions(categorySettings.Admin.Breadcrumb);
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions);
             return View(model);
         }
 
         public async Task<IActionResult> Create()
         {
             var model = new CategoryModel();
-            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model);
+            var categorySettings = _categorySettingsSnapshot.Value;
+            var breadcrumbOptions = _GetBreadcrumbOptions(categorySettings.Admin.Breadcrumb);
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions);
 
             return View(model);
         }
@@ -95,7 +107,9 @@ namespace Annstore.Web.Areas.Admin.Controllers
                 ModelState.AddModelError(string.Empty, response.Message);
             }
 
-            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model);
+            var categorySettings = _categorySettingsSnapshot.Value;
+            var breadcrumbOptions = _GetBreadcrumbOptions(categorySettings.Admin.Breadcrumb);
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions);
             return View(model);
         }
 
@@ -120,6 +134,28 @@ namespace Annstore.Web.Areas.Admin.Controllers
             }
             return RedirectToAction(nameof(List));
         }
+        #endregion
+
+        #region Helpers
+        private CategoryListOptions _GetCategoryListOptions(CategorySettings settings)
+        {
+            CategoryListOptions options = new CategoryListOptions();
+            options.Breadcrumb = _GetBreadcrumbOptions(settings.Admin.Breadcrumb);
+            return options;
+        }
+
+        private BreadcrumbOptions _GetBreadcrumbOptions(CategorySettings.BreadcrumbSettings settings)
+        {
+            var breadcrumbOptions = new BreadcrumbOptions
+            {
+                Enable = settings.Enable,
+                Separator = settings.Separator,
+                DeepLevel = settings.DeepLevel,
+                UseParentAsTarget = settings.UseParentAsTarget
+            };
+            return breadcrumbOptions;
+        }
+
         #endregion
     }
 }

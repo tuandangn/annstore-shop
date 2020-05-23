@@ -16,7 +16,7 @@
                     <option value="0" selected="@(Model.ParentId == 0)"></option>
                     @foreach (var item in Model.ParentableCategories)
                     {
-                        <option value="@item.Id" selected="@(Model.ParentId == item.Id)">@item.Name</option>
+                        <option value="@item.Id" selected="@(Model.ParentId == item.Id)">@item.Breadcrumb</option>
                     }
                 </select>
                 <span class="text-muted" asp-validation-for="Name"></span>

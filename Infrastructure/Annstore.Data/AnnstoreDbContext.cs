@@ -1,9 +1,11 @@
 ﻿using Annstore.Core.Entities.Catalog;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Annstore.Core.Entities.Users;
 
 namespace Annstore.Data
 {
-    public class AnnstoreDbContext : DbContext, IDbContext
+    public class AnnstoreDbContext : IdentityDbContext<AppUser, AppRole, int>, IDbContext
     {
         public AnnstoreDbContext(DbContextOptions<AnnstoreDbContext> opts) : base(opts)
         {

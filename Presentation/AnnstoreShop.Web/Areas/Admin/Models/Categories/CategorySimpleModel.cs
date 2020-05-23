@@ -10,5 +10,7 @@ namespace Annstore.Web.Areas.Admin.Models.Categories
         public string Name { get; set; }
 
         public int DisplayOrder { get; set; }
+
+        public string Breadcrumb { get; set; }
     }
 }

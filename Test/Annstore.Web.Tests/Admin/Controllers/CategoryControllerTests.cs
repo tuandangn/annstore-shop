@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Annstore.Core.Entities.Catalog;
-using Annstore.Data;
-using Annstore.Services.Catalog;
 using Annstore.Web.Areas.Admin.Controllers;
-using Annstore.Web.Areas.Admin.Factories;
 using Annstore.Web.Areas.Admin.Models.Categories;
+using Annstore.Web.Areas.Admin.Services.Categories;
+using Annstore.Web.Areas.Admin.Services.Categories.Options;
 using Annstore.Web.Infrastructure;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -22,7 +19,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
         [Fact]
         public void Index_RedirectToList()
         {
-            var categoryController = new CategoryController(Mock.Of<IAdminCategoryService>());
+            var categoryController = new CategoryController(Mock.Of<IAdminCategoryService>(), Mock.Of<IOptionsSnapshot<CategorySettings>>());
 
             var redirectResult = categoryController.Index();
 
@@ -36,11 +33,16 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task List_ReturnValidModel()
         {
             var categoryListModel = new CategoryListModel();
+            var categorySettings = new CategorySettings();
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
-            adminCategoryServiceMock.Setup(c => c.GetCategoryListModelAsync())
+            adminCategoryServiceMock.Setup(c => c.GetCategoryListModelAsync(It.IsAny<CategoryListOptions>()))
                 .ReturnsAsync(categoryListModel)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categorySettingsSnapshopStub = new Mock<IOptionsSnapshot<CategorySettings>>();
+            categorySettingsSnapshopStub.Setup(csn => csn.Value)
+                .Returns(categorySettings)
+                .Verifiable();
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, categorySettingsSnapshopStub.Object);
 
             var result = await categoryController.List();
 
@@ -56,10 +58,10 @@ namespace Annstore.Web.Tests.Admin.Controllers
         {
             var notFoundCategoryId = 0;
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
-            adminCategoryServiceMock.Setup(s => s.GetCategoryModelAsync(notFoundCategoryId))
+            adminCategoryServiceMock.Setup(s => s.GetCategoryModelAsync(notFoundCategoryId, It.IsAny<BreadcrumbOptions>()))
                 .ReturnsAsync((CategoryModel)null)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
 
             var result = await categoryController.Edit(0);
 
@@ -74,10 +76,10 @@ namespace Annstore.Web.Tests.Admin.Controllers
             var id = 1;
             var model = new CategoryModel();
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
-            adminCategoryServiceMock.Setup(s => s.GetCategoryModelAsync(id))
+            adminCategoryServiceMock.Setup(s => s.GetCategoryModelAsync(id, It.IsAny<BreadcrumbOptions>()))
                 .ReturnsAsync(model)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
 
             var result = await categoryController.Edit(id);
 
@@ -93,10 +95,10 @@ namespace Annstore.Web.Tests.Admin.Controllers
         {
             var model = new CategoryModel();
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
-            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model))
+            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>()))
                 .ReturnsAsync(model)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
             categoryController.ModelState.AddModelError("error", "error");
 
             var result = await categoryController.Edit(model);
@@ -117,7 +119,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Setup(c => c.UpdateCategoryAsync(It.Is<AppRequest<CategoryModel>>(req => req.Data == model)))
                 .ReturnsAsync(invalidModelResponse)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, Mock.Of<IOptionsSnapshot<CategorySettings>>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Edit(model);
@@ -138,10 +140,10 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Setup(c => c.UpdateCategoryAsync(It.Is<AppRequest<CategoryModel>>(req => req.Data == model)))
                 .ReturnsAsync(errorResponse)
                 .Verifiable();
-            adminCategoryServiceMock.Setup(c => c.PrepareCategoryModelParentCategoriesAsync(model))
+            adminCategoryServiceMock.Setup(c => c.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>()))
                 .ReturnsAsync(model)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Edit(model);
@@ -162,7 +164,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Setup(c => c.UpdateCategoryAsync(It.Is<AppRequest<CategoryModel>>(req => req.Data == model)))
                 .ReturnsAsync(successResponse)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, Mock.Of<IOptionsSnapshot<CategorySettings>>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Edit(model);
@@ -178,9 +180,9 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task Create_PrepareValidModel()
         {
             var categoryModelFactoryMock = new Mock<IAdminCategoryService>();
-            categoryModelFactoryMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(It.IsAny<CategoryModel>()))
+            categoryModelFactoryMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(It.IsAny<CategoryModel>(), It.IsAny<BreadcrumbOptions>()))
                 .Verifiable();
-            var categoryController = new CategoryController(categoryModelFactoryMock.Object);
+            var categoryController = new CategoryController(categoryModelFactoryMock.Object, _GetDefaultCategorySettingsSnapshot());
 
             var result = await categoryController.Create();
 
@@ -197,10 +199,10 @@ namespace Annstore.Web.Tests.Admin.Controllers
         {
             var model = new CategoryModel();
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
-            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model))
+            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>()))
                 .ReturnsAsync(model)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
             categoryController.ModelState.AddModelError("error", "error");
 
             var result = await categoryController.Create(model);
@@ -217,13 +219,13 @@ namespace Annstore.Web.Tests.Admin.Controllers
             var model = new CategoryModel();
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
             var errorResponse = AppResponse.ErrorResult<Category>(string.Empty);
-            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model))
+            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>()))
                 .ReturnsAsync(model)
                 .Verifiable();
             adminCategoryServiceMock.Setup(cf => cf.CreateCategoryAsync(It.Is<AppRequest<CategoryModel>>(req => req.Data == model)))
                 .ReturnsAsync(errorResponse)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Create(model);
@@ -244,7 +246,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Setup(c => c.CreateCategoryAsync(It.Is<AppRequest<CategoryModel>>(req => req.Data == model)))
                 .ReturnsAsync(invalidModelResponse)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, Mock.Of<IOptionsSnapshot<CategorySettings>>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Create(model);
@@ -264,7 +266,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Setup(c => c.CreateCategoryAsync(It.Is<AppRequest<CategoryModel>>(req => req.Data == model)))
                 .ReturnsAsync(successResponse)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, Mock.Of<IOptionsSnapshot<CategorySettings>>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Create(model);
@@ -286,7 +288,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Setup(c => c.DeleteCategoryAsync(It.Is<AppRequest<int>>(req => req.Data == notFoundCategoryId)))
                 .ReturnsAsync(invalidModelResponse)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, Mock.Of<IOptionsSnapshot<CategorySettings>>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Delete(notFoundCategoryId);
@@ -306,7 +308,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Setup(c => c.DeleteCategoryAsync(It.Is<AppRequest<int>>(req => req.Data == categoryId)))
                 .ReturnsAsync(errorResponse)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, Mock.Of<IOptionsSnapshot<CategorySettings>>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Delete(categoryId);
@@ -326,7 +328,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Setup(c => c.DeleteCategoryAsync(It.Is<AppRequest<int>>(req => req.Data == categoryId)))
                 .ReturnsAsync(successResponse)
                 .Verifiable();
-            var categoryController = new CategoryController(adminCategoryServiceMock.Object);
+            var categoryController = new CategoryController(adminCategoryServiceMock.Object, Mock.Of<IOptionsSnapshot<CategorySettings>>());
             categoryController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await categoryController.Delete(categoryId);
@@ -336,6 +338,17 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminCategoryServiceMock.Verify();
         }
 
+        #endregion
+
+        #region Helpers
+        private IOptionsSnapshot<CategorySettings> _GetDefaultCategorySettingsSnapshot()
+        {
+            var categorySettingsSnapshotStub = new Mock<IOptionsSnapshot<CategorySettings>>();
+            categorySettingsSnapshotStub.Setup(c => c.Value)
+                .Returns(new CategorySettings());
+
+            return categorySettingsSnapshotStub.Object;;
+        }
         #endregion
     }
 }

@@ -36,7 +36,7 @@ namespace Annstore.Services.Tests.Catalog
         public async Task GetCategoryByIdAsync_FindCategoryById()
         {
             var id = 1;
-            var category = new Category{Id = id};
+            var category = new Category { Id = id };
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             categoryRepositoryMock.Setup(r => r.FindByIdAsync(id))
                 .ReturnsAsync(category)
@@ -125,6 +125,101 @@ namespace Annstore.Services.Tests.Catalog
 
             await categoryService.DeleteCategoryAsync(category);
 
+            categoryRepositoryMock.Verify();
+        }
+
+        #endregion
+
+        #region GetCategoryBreadcrumbAsync
+        [Fact]
+        public async Task GetCategoryBreadcrumbAsync_CategoryIsNull_ThrowArgumentNullException()
+        {
+            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.GetCategoryBreadcrumbAsync(null, 0));
+        }
+
+        [Fact]
+        public async Task GetCategoryBreadcrumbAsync_DeepLevelIsLessThanZeror_ThrowArgumentException()
+        {
+            var deepLevel = -1;
+            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+
+            await Assert.ThrowsAsync<ArgumentException>(() => categoryService.GetCategoryBreadcrumbAsync(new Category(), deepLevel));
+        }
+
+        [Fact]
+        public async Task GetCategoryBreadcrumbAsync_DeepLevelIsZeror_ReturnContainedCategoryList()
+        {
+            var category = new Category();
+            var deepLevel = 0;
+            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+
+            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel);
+
+            Assert.Single(categoryBreadcrumb);
+            Assert.Equal(category, categoryBreadcrumb[0]);
+        }
+
+        [Fact]
+        public async Task GetCategoryBreadcrumbAsync_ParentIdIsZero_ReturnContainedCategoryList()
+        {
+            var category = new Category { ParentId = 0 };
+            var deepLevel = 1;
+            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+
+            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel);
+
+            Assert.Single(categoryBreadcrumb);
+            Assert.Equal(category, categoryBreadcrumb[0]);
+        }
+
+        [Fact]
+        public async Task GetCategoryBreadcrumbAsync_DeepLevelIsGreaterThanZero_IncludeParentCategoryHierarchy()
+        {
+            var category = new Category { Id = 1, ParentId = 2 };
+            var parentCategory = new Category { Id = 2, ParentId = 3 };
+            var ancestorCategory = new Category { Id = 3 };
+            var deepLevel = 2;
+            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            categoryRepositoryMock.Setup(c => c.FindByIdAsync(2))
+                .ReturnsAsync(parentCategory)
+                .Verifiable();
+            categoryRepositoryMock.Setup(c => c.FindByIdAsync(3))
+                .ReturnsAsync(ancestorCategory)
+                .Verifiable();
+            var categoryService = new CategoryService(categoryRepositoryMock.Object);
+
+            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel);
+
+            Assert.Equal(3, categoryBreadcrumb.Count);
+            Assert.Equal(ancestorCategory, categoryBreadcrumb[0]);
+            Assert.Equal(parentCategory, categoryBreadcrumb[1]);
+            Assert.Equal(category, categoryBreadcrumb[2]);
+            categoryRepositoryMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetCategoryBreadcrumbAsync_ParentCategoryIsNotFound_ReturnCurrentResult()
+        {
+            var notFoundCategoryId = 5;
+            var category = new Category { Id = 1, ParentId = 2 };
+            var parentCategory = new Category { Id = 2, ParentId = notFoundCategoryId };
+            var deepLevel = 2;
+            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            categoryRepositoryMock.Setup(c => c.FindByIdAsync(2))
+                .ReturnsAsync(parentCategory)
+                .Verifiable();
+            categoryRepositoryMock.Setup(c => c.FindByIdAsync(notFoundCategoryId))
+                .ReturnsAsync((Category) null)
+                .Verifiable();
+            var categoryService = new CategoryService(categoryRepositoryMock.Object);
+
+            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel);
+
+            Assert.Equal(2, categoryBreadcrumb.Count);
+            Assert.Equal(parentCategory, categoryBreadcrumb[0]);
+            Assert.Equal(category, categoryBreadcrumb[1]);
             categoryRepositoryMock.Verify();
         }
 

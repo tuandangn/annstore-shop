@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Annstore.Web.Areas.Admin.Services.Category.Options
+namespace Annstore.Web.Areas.Admin.Services.Categories.Options
 {
     [Serializable]
     public class CategoryListOptions

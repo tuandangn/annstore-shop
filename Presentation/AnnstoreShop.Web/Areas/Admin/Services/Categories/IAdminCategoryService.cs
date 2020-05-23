@@ -1,10 +1,10 @@
 ﻿using Annstore.Core.Entities.Catalog;
 using Annstore.Web.Areas.Admin.Models.Categories;
-using Annstore.Web.Areas.Admin.Services.Category.Options;
+using Annstore.Web.Areas.Admin.Services.Categories.Options;
 using Annstore.Web.Infrastructure;
 using System.Threading.Tasks;
 
-namespace Annstore.Web.Areas.Admin.Factories
+namespace Annstore.Web.Areas.Admin.Services.Categories
 {
     public interface IAdminCategoryService
     {

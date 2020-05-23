@@ -2,10 +2,10 @@
 using System.Threading.Tasks;
 using Annstore.Web.Areas.Admin.Models.Categories;
 using Annstore.Web.Areas.Admin.Infrastructure;
-using Annstore.Web.Areas.Admin.Factories;
 using Annstore.Web.Infrastructure;
 using Microsoft.Extensions.Options;
-using Annstore.Web.Areas.Admin.Services.Category.Options;
+using Annstore.Web.Areas.Admin.Services.Categories;
+using Annstore.Web.Areas.Admin.Services.Categories.Options;
 
 namespace Annstore.Web.Areas.Admin.Controllers
 {

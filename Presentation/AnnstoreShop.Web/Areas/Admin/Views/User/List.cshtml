@@ -1,6 +1,6 @@
-﻿@model CategoryListModel
+﻿@model UserListModel
 @{
-    ViewData["Title"] = "Danh mục";
+    ViewData["Title"] = "Người dùng";
 }
 
 <div class="row">
@@ -11,38 +11,26 @@
                 <div class="float-right mt-2">
                     <a asp-action="Create" class="btn btn-success"><i class="fa fa-plus"></i> Thêm mới</a>
                 </div>
-                <h1>Danh mục</h1>
+                <h1>Người dùng</h1>
             </div>
         </div>
 
-        @if (Model.Categories.Count > 0)
+        @if (Model.Users.Count > 0)
         {
             <div class="row">
                 <div class="table-responsive">
                     <table class="table">
                         <tr>
                             <th>
-                                Danh mục
-                            </th>
-                            <th>
-                                Breadcrumb
-                            </th>
-                            <th class="text-right">
-                                Thứ tự
+                                Email
                             </th>
                             <th></th>
                         </tr>
-                        @foreach (var item in Model.Categories)
+                        @foreach (var item in Model.Users)
                         {
                             <tr>
                                 <td>
-                                    @item.Name
-                                </td>
-                                <td>
-                                    @item.Breadcrumb
-                                </td>
-                                <td class="text-right">
-                                    @item.DisplayOrder
+                                    @item.Email
                                 </td>
                                 <td class="text-right">
                                     <form method="POST" asp-antiforgery="true" asp-action="Delete">
@@ -67,7 +55,7 @@
         }
         else
         {
-            <div class="alert alert-info">Hiện không có danh mục nào</div>
+            <div class="alert alert-info">Hiện không có người dùng nào.</div>
         }
     </div>
 </div>

@@ -21,6 +21,24 @@
     {
       "library": "jquery-validation-unobtrusive@3.2.11",
       "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
+    },
+    {
+      "library": "popper.js@2.4.0",
+      "destination": "wwwroot/lib/popper.js/",
+      "files": [
+        "umd/popper-base.js",
+        "umd/popper-base.js.map",
+        "umd/popper-base.min.js",
+        "umd/popper-base.min.js.map",
+        "umd/popper-lite.js",
+        "umd/popper-lite.js.map",
+        "umd/popper-lite.min.js",
+        "umd/popper-lite.min.js.map",
+        "umd/popper.js",
+        "umd/popper.js.map",
+        "umd/popper.min.js",
+        "umd/popper.min.js.map"
+      ]
     }
   ]
 }

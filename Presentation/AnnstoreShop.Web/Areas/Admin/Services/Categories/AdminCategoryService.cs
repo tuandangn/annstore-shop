@@ -2,7 +2,7 @@
 using Annstore.Services.Catalog;
 using Annstore.Web.Areas.Admin.Infrastructure;
 using Annstore.Web.Areas.Admin.Models.Categories;
-using Annstore.Web.Areas.Admin.Services.Category.Options;
+using Annstore.Web.Areas.Admin.Services.Categories.Options;
 using Annstore.Web.Infrastructure;
 using AutoMapper;
 using System;
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Annstore.Web.Areas.Admin.Factories
+namespace Annstore.Web.Areas.Admin.Services.Categories
 {
     public sealed class AdminCategoryService : IAdminCategoryService
     {

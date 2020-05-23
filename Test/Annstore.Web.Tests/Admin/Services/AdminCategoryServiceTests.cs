@@ -5,12 +5,11 @@ using Moq;
 using System.Threading.Tasks;
 using Xunit;
 using System.Collections.Generic;
-using Annstore.Web.Areas.Admin.Factories;
 using AutoMapper;
 using System;
 using Annstore.Web.Infrastructure;
-using Annstore.Web.Areas.Admin.Services.Category.Options;
-using System.Runtime.CompilerServices;
+using Annstore.Web.Areas.Admin.Services.Categories;
+using Annstore.Web.Areas.Admin.Services.Categories.Options;
 
 namespace Annstore.Web.Tests.Admin.Services
 {

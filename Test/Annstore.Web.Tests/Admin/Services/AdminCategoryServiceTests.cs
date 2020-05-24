@@ -30,8 +30,9 @@ namespace Annstore.Web.Tests.Admin.Services
         {
             var model = new CategoryModel { Id = 0 };
             var allCategories = new List<Category> { new Category { Id = 1 } };
+            var showHidden = false;
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetCategoriesAsync())
+            categoryServiceMock.Setup(c => c.GetCategoriesAsync(showHidden))
                 .ReturnsAsync(allCategories)
                 .Verifiable();
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
@@ -47,8 +48,9 @@ namespace Annstore.Web.Tests.Admin.Services
         {
             var model = new CategoryModel { Id = 1 };
             var allCategories = new List<Category> { new Category { Id = 1 } };
+            var showHidden = false;
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetCategoriesAsync())
+            categoryServiceMock.Setup(c => c.GetCategoriesAsync(showHidden))
                 .ReturnsAsync(allCategories)
                 .Verifiable();
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
@@ -66,8 +68,9 @@ namespace Annstore.Web.Tests.Admin.Services
             var mappedCategory = new Category { Id = 2 };
             var allCategories = new List<Category> { mappedCategory };
             var simpleModel = new CategorySimpleModel { Id = 2 };
+            var showHidden = false;
             var categoryServiceStub = new Mock<ICategoryService>();
-            categoryServiceStub.Setup(c => c.GetCategoriesAsync())
+            categoryServiceStub.Setup(c => c.GetCategoriesAsync(showHidden))
                 .ReturnsAsync(allCategories);
             var mapperMock = new Mock<IMapper>();
             mapperMock.Setup(m => m.Map<CategorySimpleModel>(mappedCategory))
@@ -97,10 +100,11 @@ namespace Annstore.Web.Tests.Admin.Services
             var simpleModel = new CategorySimpleModel { Id = 2 };
             var categoryBreadcrumb = new List<Category> { new Category { Name = "B" }, mappedCategory };
             var expectedBreadcrum = string.Format("{0} {1} {2}", "B", " - ", "A");
+            var showHidden = false;
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetCategoriesAsync())
+            categoryServiceMock.Setup(c => c.GetCategoriesAsync(showHidden))
                 .ReturnsAsync(allCategories);
-            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(mappedCategory, breadcrumbOptions.DeepLevel))
+            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(mappedCategory, breadcrumbOptions.DeepLevel, showHidden))
                 .ReturnsAsync(categoryBreadcrumb)
                 .Verifiable();
             var mapperStub = new Mock<IMapper>();
@@ -122,7 +126,8 @@ namespace Annstore.Web.Tests.Admin.Services
                 Enable = true,
                 DeepLevel = 3,
                 Separator = " - ",
-                UseParentAsTarget = true
+                UseParentAsTarget = true,
+                ShowHidden = true
             };
             var model = new CategoryModel { Id = 1 };
             var mappedCategory = new Category { Id = 2, Name = "A", ParentId = 3 };
@@ -131,10 +136,11 @@ namespace Annstore.Web.Tests.Admin.Services
             var simpleModel = new CategorySimpleModel { Id = 2 };
             var categoryBreadcrumb = new List<Category> { new Category { Name = "B" }, mappedCategory };
             var expectedBreadcrum = string.Format("{0} {1} {2}", "B", " - ", "A");
+            var showHidden = true;
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetCategoriesAsync())
+            categoryServiceMock.Setup(c => c.GetCategoriesAsync(showHidden))
                 .ReturnsAsync(allCategories);
-            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(parentCategory, breadcrumbOptions.DeepLevel))
+            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(parentCategory, breadcrumbOptions.DeepLevel, breadcrumbOptions.ShowHidden))
                 .ReturnsAsync(categoryBreadcrumb);
             categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(mappedCategory.ParentId))
                 .ReturnsAsync(parentCategory)
@@ -144,7 +150,7 @@ namespace Annstore.Web.Tests.Admin.Services
                 .Returns(simpleModel);
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, mapperStub.Object);
 
-            var result = await adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions);
+            var result = await adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions, showHidden);
 
             Assert.Equal(expectedBreadcrum, result.ParentableCategories[0].Breadcrumb);
             categoryServiceMock.Verify();
@@ -170,11 +176,29 @@ namespace Annstore.Web.Tests.Admin.Services
         }
 
         [Fact]
+        public async Task GetCategoryModelAsync_CategoryDeleted_ReturnNull()
+        {
+            var deletedCategoryId = 1;
+            var deletedCategory = new Category { Id = deletedCategoryId, Deleted = true };
+            var categoryServiceMock = new Mock<ICategoryService>();
+            categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(deletedCategoryId))
+                .ReturnsAsync(deletedCategory)
+                .Verifiable();
+            var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
+
+            var nullModel = await adminCategoryService.GetCategoryModelAsync(deletedCategoryId, new BreadcrumbOptions());
+
+            Assert.Null(nullModel);
+            categoryServiceMock.Verify();
+        }
+
+        [Fact]
         public async Task GetCategoryModelAsync_CategoryNotNull_MapToCategoryModel()
         {
             var id = 1;
             var category = new Category { Id = id };
             var model = new CategoryModel { Id = id };
+            var showHidden = true;
             var mapperMock = new Mock<IMapper>();
             mapperMock.Setup(m => m.Map<CategoryModel>(category))
                 .Returns(model)
@@ -182,7 +206,7 @@ namespace Annstore.Web.Tests.Admin.Services
             var categoryServiceStub = new Mock<ICategoryService>();
             categoryServiceStub.Setup(c => c.GetCategoryByIdAsync(id))
                 .ReturnsAsync(category);
-            categoryServiceStub.Setup(c => c.GetCategoriesAsync())
+            categoryServiceStub.Setup(c => c.GetCategoriesAsync(showHidden))
                 .ReturnsAsync(new List<Category>());
             var adminCategoryService = new AdminCategoryService(categoryServiceStub.Object, mapperMock.Object);
 
@@ -199,13 +223,14 @@ namespace Annstore.Web.Tests.Admin.Services
             var category = new Category { Id = id };
             var model = new CategoryModel { Id = id };
             var allCategories = new List<Category> { category };
+            var showHidden = true;
             var mapperStub = new Mock<IMapper>();
             mapperStub.Setup(m => m.Map<CategoryModel>(category))
                 .Returns(model);
             var categoryServiceMock = new Mock<ICategoryService>();
             categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(id))
                 .ReturnsAsync(category);
-            categoryServiceMock.Setup(c => c.GetCategoriesAsync())
+            categoryServiceMock.Setup(c => c.GetCategoriesAsync(showHidden))
                 .ReturnsAsync(allCategories)
                 .Verifiable();
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, mapperStub.Object);
@@ -226,8 +251,9 @@ namespace Annstore.Web.Tests.Admin.Services
             var mappedModel = new CategorySimpleModel { Id = category.Id };
             var allCategories = new List<Category> { category };
             var categoryListOptions = new CategoryListOptions { PageNumber = 1, PageSize = int.MaxValue };
+            var showHidden = true;
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize))
+            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize, showHidden))
                 .ReturnsAsync(allCategories.ToPagedList(categoryListOptions.PageSize, categoryListOptions.PageNumber, 12))
                 .Verifiable();
             var mapperMock = new Mock<IMapper>();
@@ -252,8 +278,9 @@ namespace Annstore.Web.Tests.Admin.Services
             var allCategories = new List<Category> { category };
             var totalItems = 3;
             var categoryListOptions = new CategoryListOptions { PageNumber = 2, PageSize = 1 };
+            var showHidden = true;
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize))
+            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize, showHidden))
                 .ReturnsAsync(allCategories.ToPagedList(categoryListOptions.PageSize, categoryListOptions.PageNumber, totalItems))
                 .Verifiable();
             var mapperStub = new Mock<IMapper>();
@@ -280,7 +307,8 @@ namespace Annstore.Web.Tests.Admin.Services
                 {
                     Enable = true,
                     DeepLevel = deepLevel,
-                    Separator = separator
+                    Separator = separator,
+                    ShowHidden = true
                 },
                 PageSize = int.MaxValue,
                 PageNumber = 1
@@ -290,10 +318,11 @@ namespace Annstore.Web.Tests.Admin.Services
             var expectedBreadcrumb = "B | A";
             var mappedModel = new CategorySimpleModel { Id = category.Id };
             var allCategories = new List<Category> { category };
+            var showHidden = true;
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize))
+            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize, showHidden))
                 .ReturnsAsync(allCategories.ToPagedList(categoryListOptions.PageSize, categoryListOptions.PageNumber, 12));
-            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(category, deepLevel))
+            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(category, deepLevel, categoryListOptions.Breadcrumb.ShowHidden))
                 .ReturnsAsync(categoryBreadcrumb)
                 .Verifiable();
             var mapperStub = new Mock<IMapper>();
@@ -320,7 +349,8 @@ namespace Annstore.Web.Tests.Admin.Services
                     Enable = true,
                     DeepLevel = deepLevel,
                     Separator = separator,
-                    UseParentAsTarget = parentOnly
+                    UseParentAsTarget = parentOnly,
+                    ShowHidden = true
                 },
                 PageSize = int.MaxValue,
                 PageNumber = 1
@@ -331,13 +361,14 @@ namespace Annstore.Web.Tests.Admin.Services
             var expectedBreadcrumb = "C | D";
             var mappedModel = new CategorySimpleModel { Id = category.Id };
             var allCategories = new List<Category> { category };
+            var showHidden = true;
             var categoryServiceMock = new Mock<ICategoryService>();
             categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(category.ParentId))
                 .ReturnsAsync(parentCategory)
                 .Verifiable();
-            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize))
+            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize, showHidden))
                 .ReturnsAsync(allCategories.ToPagedList(categoryListOptions.PageSize, categoryListOptions.PageNumber, 12));
-            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(parentCategory, deepLevel))
+            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(parentCategory, deepLevel, categoryListOptions.Breadcrumb.ShowHidden))
                 .ReturnsAsync(categoryBreadcrumb);
             var mapperStub = new Mock<IMapper>();
             mapperStub.Setup(m => m.Map<CategorySimpleModel>(category))
@@ -464,6 +495,26 @@ namespace Annstore.Web.Tests.Admin.Services
         }
 
         [Fact]
+        public async Task UpdateCategoryAsync_CategoryIsDeleted_ReturnModelInvalidResponse()
+        {
+            var deletedCategoryId = 1;
+            var deletedCategory = new Category { Id = deletedCategoryId, Deleted = true };
+            var categoryModel = new CategoryModel { Id = deletedCategoryId };
+            var categoryServiceMock = new Mock<ICategoryService>();
+            categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(categoryModel.Id))
+                .ReturnsAsync(deletedCategory)
+                .Verifiable();
+            var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
+            var appRequest = new AppRequest<CategoryModel>(categoryModel);
+
+            var appResponse = await adminCategoryService.UpdateCategoryAsync(appRequest);
+
+            Assert.False(appResponse.Success);
+            Assert.True(appResponse.ModelIsInvalid);
+            categoryServiceMock.Verify();
+        }
+
+        [Fact]
         public async Task UpdateCategoryAsync_UpdateCategoryError_ReturnErrorResponse()
         {
             var categoryModel = new CategoryModel { Id = 2 };
@@ -518,6 +569,25 @@ namespace Annstore.Web.Tests.Admin.Services
 
             Assert.True(appResponse.Success);
             categoryServiceMock.Verify();
+        }
+        [Fact]
+        public async Task DeleteCategoryAsync_CategoryIsDeleted_SkipToSuccess()
+        {
+            var deletedCategoryId = 1;
+            var categoryModel = new CategoryModel { Id = deletedCategoryId };
+            var category = new Category { Id = categoryModel.Id, Deleted = true };
+            var categoryServiceMock = new Mock<ICategoryService>();
+            categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(categoryModel.Id))
+                .ReturnsAsync(category);
+            categoryServiceMock.Setup(c => c.DeleteCategoryAsync(category))
+                .Returns(Task.CompletedTask);
+            var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
+            var appRequest = new AppRequest<int>(deletedCategoryId);
+
+            var appResponse = await adminCategoryService.DeleteCategoryAsync(appRequest);
+
+            Assert.True(appResponse.Success);
+            categoryServiceMock.Verify(c => c.DeleteCategoryAsync(category), Times.Never);
         }
 
         [Fact]
@@ -587,13 +657,14 @@ namespace Annstore.Web.Tests.Admin.Services
             var separator = ">>>";
             var deepLevel = 2;
             var breadcrumb = new List<Category> { new Category { Name = "A" }, new Category { Name = "B" } };
+            var showHidden = false;
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(category, deepLevel))
+            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(category, deepLevel, showHidden))
                 .ReturnsAsync(breadcrumb)
                 .Verifiable();
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
 
-            var breadcrumbString = await adminCategoryService.GetCategoryBreadcrumbStringAsync(category, deepLevel, separator, false);
+            var breadcrumbString = await adminCategoryService.GetCategoryBreadcrumbStringAsync(category, deepLevel, separator, showHidden);
 
             Assert.Equal(string.Format("{0} {1} {2}", breadcrumb[0].Name, separator, breadcrumb[1].Name), breadcrumbString);
             categoryServiceMock.Verify();
@@ -608,17 +679,80 @@ namespace Annstore.Web.Tests.Admin.Services
             var separator = ">>>";
             var deepLevel = 2;
             var parentBreadcrumb = new List<Category> { new Category { Name = "A" }, new Category { Name = "B" } };
+            var showHidden = true;
             var categoryServiceMock = new Mock<ICategoryService>();
             categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(category.ParentId))
                 .ReturnsAsync(parentCategory)
                 .Verifiable();
-            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(parentCategory, deepLevel))
+            categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(parentCategory, deepLevel, showHidden))
                 .ReturnsAsync(parentBreadcrumb);
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
 
-            var breadcrumbString = await adminCategoryService.GetCategoryBreadcrumbStringAsync(category, deepLevel, separator, useParentAsTarget);
+            var breadcrumbString = await adminCategoryService.GetCategoryBreadcrumbStringAsync(category, deepLevel, separator, useParentAsTarget, showHidden);
 
             Assert.Equal(string.Format("{0} {1} {2}", parentBreadcrumb[0].Name, separator, parentBreadcrumb[1].Name), breadcrumbString);
+            categoryServiceMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetCategoryBreadcrumbStringAsync_ParentIsDeleted_ReturnEmptyResult()
+        {
+            var useParentAsTarget = true;
+            var category = new Category { ParentId = 1 };
+            var parentCategory = new Category { Id = 1, Deleted = true };
+            var separator = ">>>";
+            var deepLevel = 2;
+            var showHidden = true;
+            var categoryServiceMock = new Mock<ICategoryService>();
+            categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(category.ParentId))
+                .ReturnsAsync(parentCategory)
+                .Verifiable();
+            var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
+
+            var breadcrumbString = await adminCategoryService.GetCategoryBreadcrumbStringAsync(category, deepLevel, separator, useParentAsTarget, showHidden);
+
+            Assert.Empty(breadcrumbString);
+            categoryServiceMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetCategoryBreadcrumbStringAsync_ParentIsNull_ReturnEmptyResult()
+        {
+            var useParentAsTarget = true;
+            var category = new Category { ParentId = 1 };
+            var separator = ">>>";
+            var deepLevel = 2;
+            var showHidden = true;
+            var categoryServiceMock = new Mock<ICategoryService>();
+            categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(category.ParentId))
+                .ReturnsAsync((Category) null)
+                .Verifiable();
+            var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
+
+            var breadcrumbString = await adminCategoryService.GetCategoryBreadcrumbStringAsync(category, deepLevel, separator, useParentAsTarget, showHidden);
+
+            Assert.Empty(breadcrumbString);
+            categoryServiceMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetCategoryBreadcrumbStringAsync_ShowHiddenIsFalseAndParentIsNotPublished_ReturnEmptyResult()
+        {
+            var useParentAsTarget = true;
+            var category = new Category { ParentId = 1 };
+            var parentCategory = new Category { Id = category.ParentId, Published = false };
+            var separator = ">>>";
+            var deepLevel = 2;
+            var showHidden = false;
+            var categoryServiceMock = new Mock<ICategoryService>();
+            categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(category.ParentId))
+                .ReturnsAsync(parentCategory)
+                .Verifiable();
+            var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
+
+            var breadcrumbString = await adminCategoryService.GetCategoryBreadcrumbStringAsync(category, deepLevel, separator, useParentAsTarget, showHidden);
+
+            Assert.Empty(breadcrumbString);
             categoryServiceMock.Verify();
         }
 

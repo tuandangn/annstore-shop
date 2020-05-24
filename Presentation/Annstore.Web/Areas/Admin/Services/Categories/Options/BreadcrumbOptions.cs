@@ -12,5 +12,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories.Options
         public int DeepLevel { get; set; }
 
         public bool UseParentAsTarget { get; set; }
+
+        public bool ShowHidden { get; set; }
     }
 }

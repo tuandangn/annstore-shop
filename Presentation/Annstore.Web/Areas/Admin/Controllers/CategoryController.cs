@@ -71,16 +71,19 @@ namespace Annstore.Web.Areas.Admin.Controllers
             }
             var categorySettings = _categorySettingsSnapshot.Value;
             var breadcrumbOptions = _GetBreadcrumbOptions(categorySettings.Admin.Breadcrumb);
-            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions);
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions, true);
             return View(model);
         }
 
         public async Task<IActionResult> Create()
         {
             var model = new CategoryModel();
+            //default values
+            model.Published = true;
+            model.DisplayOrder = 1;
             var categorySettings = _categorySettingsSnapshot.Value;
             var breadcrumbOptions = _GetBreadcrumbOptions(categorySettings.Admin.Breadcrumb);
-            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions);
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions, true);
 
             return View(model);
         }
@@ -109,7 +112,7 @@ namespace Annstore.Web.Areas.Admin.Controllers
 
             var categorySettings = _categorySettingsSnapshot.Value;
             var breadcrumbOptions = _GetBreadcrumbOptions(categorySettings.Admin.Breadcrumb);
-            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions);
+            await _adminCategoryService.PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOptions, true);
             return View(model);
         }
 
@@ -156,7 +159,8 @@ namespace Annstore.Web.Areas.Admin.Controllers
                 Enable = settings.Enable,
                 Separator = settings.Separator,
                 DeepLevel = settings.DeepLevel,
-                UseParentAsTarget = settings.UseParentAsTarget
+                UseParentAsTarget = settings.UseParentAsTarget,
+                ShowHidden = settings.ShowHidden
             };
             return breadcrumbOptions;
         }

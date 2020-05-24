@@ -12,7 +12,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
 
         Task<CategoryListModel> GetCategoryListModelAsync(CategoryListOptions options);
 
-        Task<CategoryModel> PrepareCategoryModelParentCategoriesAsync(CategoryModel model, BreadcrumbOptions breadcrumbOpts);
+        Task<CategoryModel> PrepareCategoryModelParentCategoriesAsync(CategoryModel model, BreadcrumbOptions breadcrumbOpts, bool showHidden = false);
 
         Task<AppResponse<Category>> CreateCategoryAsync(AppRequest<CategoryModel> request);
 
@@ -20,6 +20,6 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
 
         Task<AppResponse> DeleteCategoryAsync(AppRequest<int> request);
 
-        Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator, bool useParenAsTarget);
+        Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator, bool useParenAsTarget, bool showHidden = false);
     }
 }

@@ -119,8 +119,9 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task EditPost_ModelStateIsInvalid_PrepareValidModel()
         {
             var model = new CategoryModel();
+            var showHidden = true;
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
-            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>()))
+            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>(), showHidden))
                 .ReturnsAsync(model)
                 .Verifiable();
             var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
@@ -160,12 +161,13 @@ namespace Annstore.Web.Tests.Admin.Controllers
             var categoryId = 1;
             var category = new Category { Id = categoryId };
             var model = new CategoryModel { Id = categoryId };
+            var showHidden = true;
             var errorResponse = AppResponse.ErrorResult<Category>(string.Empty);
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
             adminCategoryServiceMock.Setup(c => c.UpdateCategoryAsync(It.Is<AppRequest<CategoryModel>>(req => req.Data == model)))
                 .ReturnsAsync(errorResponse)
                 .Verifiable();
-            adminCategoryServiceMock.Setup(c => c.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>()))
+            adminCategoryServiceMock.Setup(c => c.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>(), showHidden))
                 .ReturnsAsync(model)
                 .Verifiable();
             var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
@@ -204,8 +206,9 @@ namespace Annstore.Web.Tests.Admin.Controllers
         [Fact]
         public async Task Create_PrepareValidModel()
         {
+            var showHidden = true;
             var categoryModelFactoryMock = new Mock<IAdminCategoryService>();
-            categoryModelFactoryMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(It.IsAny<CategoryModel>(), It.IsAny<BreadcrumbOptions>()))
+            categoryModelFactoryMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(It.IsAny<CategoryModel>(), It.IsAny<BreadcrumbOptions>(), showHidden))
                 .Verifiable();
             var categoryController = new CategoryController(categoryModelFactoryMock.Object, _GetDefaultCategorySettingsSnapshot());
 
@@ -223,8 +226,9 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task CreatePost_ModelStateIsInvalid_RedisplayViewWithValidModel()
         {
             var model = new CategoryModel();
+            var showHidden = true;
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
-            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>()))
+            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>(), showHidden))
                 .ReturnsAsync(model)
                 .Verifiable();
             var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
@@ -242,9 +246,10 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task CreatePost_ErrorResponse_RedisplayViewWithValidModel()
         {
             var model = new CategoryModel();
+            var showHidden = true;
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
             var errorResponse = AppResponse.ErrorResult<Category>(string.Empty);
-            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>()))
+            adminCategoryServiceMock.Setup(cf => cf.PrepareCategoryModelParentCategoriesAsync(model, It.IsAny<BreadcrumbOptions>(), showHidden))
                 .ReturnsAsync(model)
                 .Verifiable();
             adminCategoryServiceMock.Setup(cf => cf.CreateCategoryAsync(It.Is<AppRequest<CategoryModel>>(req => req.Data == model)))

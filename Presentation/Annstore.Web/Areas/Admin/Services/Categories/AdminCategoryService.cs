@@ -30,7 +30,8 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
         {
             var pagedCategories = await _categoryService.GetPagedCategoriesAsync(
                 options.PageNumber,
-                options.PageSize
+                options.PageSize,
+                true
             ).ConfigureAwait(false);
             var categoryModels = new List<CategorySimpleModel>();
             foreach (var category in pagedCategories)
@@ -41,7 +42,12 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
                 var breadcrumbOpts = options.Breadcrumb;
                 if (breadcrumbOpts.Enable)
                 {
-                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget)
+                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(
+                        category,
+                        breadcrumbOpts.DeepLevel,
+                        breadcrumbOpts.Separator,
+                        breadcrumbOpts.UseParentAsTarget,
+                        breadcrumbOpts.ShowHidden)
                         .ConfigureAwait(false);
                     simpleModel.Breadcrumb = breadcrumb;
                 }
@@ -64,11 +70,11 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
         {
             var category = await _categoryService.GetCategoryByIdAsync(id)
                 .ConfigureAwait(false);
-            if (category == null)
+            if (category == null || category.Deleted)
                 return null;
 
             var model = _mapper.Map<CategoryModel>(category);
-            await PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOpts)
+            await PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOpts, true)
                 .ConfigureAwait(false);
 
             return model;
@@ -92,12 +98,12 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
             }
         }
 
-        public async Task<CategoryModel> PrepareCategoryModelParentCategoriesAsync(CategoryModel model, BreadcrumbOptions breadcrumbOpts)
+        public async Task<CategoryModel> PrepareCategoryModelParentCategoriesAsync(CategoryModel model, BreadcrumbOptions breadcrumbOpts, bool showHidden = false)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
-            var categories = await _categoryService.GetCategoriesAsync().ConfigureAwait(false);
+            var categories = await _categoryService.GetCategoriesAsync(showHidden).ConfigureAwait(false);
             if (model.Id != 0)
             {
                 var removeItemIndex = categories.FindIndex(c => c.Id == model.Id);
@@ -112,7 +118,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
                 //breadcrumb
                 if (breadcrumbOpts.Enable)
                 {
-                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget)
+                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget, breadcrumbOpts.ShowHidden)
                        .ConfigureAwait(false);
                     categoryModel.Breadcrumb = breadcrumb;
                 }
@@ -131,7 +137,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
 
             var category = await _categoryService.GetCategoryByIdAsync(request.Data.Id)
                 .ConfigureAwait(false);
-            if (category == null)
+            if (category == null || category.Deleted)
                 return AppResponse.InvalidModelResult<Category>(AdminMessages.Category.CategoryIsNotFound);
 
             try
@@ -159,7 +165,10 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
 
             try
             {
-                await _categoryService.DeleteCategoryAsync(category).ConfigureAwait(false);
+                if (!category.Deleted)
+                {
+                    await _categoryService.DeleteCategoryAsync(category).ConfigureAwait(false);
+                }
 
                 return AppResponse.SuccessResult(AdminMessages.Category.DeleteCategorySuccess);
             }
@@ -170,7 +179,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
             }
         }
 
-        public async Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator, bool useParentAsTarget)
+        public async Task<string> GetCategoryBreadcrumbStringAsync(Category category, int deepLevel, string separator, bool useParentAsTarget, bool showHidden = false)
         {
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
@@ -180,13 +189,16 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
             {
                 var parentCategory = await _categoryService.GetCategoryByIdAsync(category.ParentId)
                     .ConfigureAwait(false);
-                if (parentCategory != null)
+                if (parentCategory != null && !parentCategory.Deleted && (showHidden || parentCategory.Published))
                 {
                     target = parentCategory;
+                } else
+                {
+                    return string.Empty;
                 }
             }
 
-            var breadcrumb = await _categoryService.GetCategoryBreadcrumbAsync(target, deepLevel)
+            var breadcrumb = await _categoryService.GetCategoryBreadcrumbAsync(target, deepLevel, showHidden)
                 .ConfigureAwait(false);
             var breadcrumbStringBuilder = new StringBuilder();
             for (var i = 0; i < breadcrumb.Count; i++)

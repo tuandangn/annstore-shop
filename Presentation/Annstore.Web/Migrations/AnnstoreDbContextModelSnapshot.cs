@@ -26,6 +26,12 @@ namespace AnnstoreShop.Web.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("int");
 
@@ -36,6 +42,9 @@ namespace AnnstoreShop.Web.Migrations
 
                     b.Property<int>("ParentId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("Published")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 

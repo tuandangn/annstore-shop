@@ -18,9 +18,11 @@ namespace Annstore.Services.Catalog
             _categoryRepository = categoryRepository;
         }
 
-        public async Task<List<Category>> GetCategoriesAsync()
+        public async Task<List<Category>> GetCategoriesAsync(bool showHidden = false)
         {
             var query = from category in _categoryRepository.Table
+                        where !category.Deleted && (showHidden || category.Published)
+                        orderby category.Id descending
                         select category;
 
             var result = await query.ToListAsync().ConfigureAwait(false);
@@ -60,10 +62,11 @@ namespace Annstore.Services.Catalog
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
 
-            await _categoryRepository.DeleteAsync(category).ConfigureAwait(false);
+            category.Deleted = true;
+            await _categoryRepository.UpdateAsync(category).ConfigureAwait(false);
         }
 
-        public async Task<List<Category>> GetCategoryBreadcrumbAsync(Category category, int deepLevel)
+        public async Task<List<Category>> GetCategoryBreadcrumbAsync(Category category, int deepLevel, bool showHidden = false)
         {
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
@@ -74,25 +77,25 @@ namespace Annstore.Services.Catalog
             if (deepLevel == 0 || category.ParentId == 0)
                 return breadcrumb;
 
-            await _GetCategoryBreadcrum(breadcrumb, category, 0, deepLevel);
+            await _GetCategoryBreadcrum(breadcrumb, category, 0, deepLevel, showHidden);
             breadcrumb.Reverse();
             return breadcrumb;
         }
 
-        private async Task<List<Category>> _GetCategoryBreadcrum(List<Category> breadcrumb, Category category, int currentLevel, int maxLevel)
+        private async Task<List<Category>> _GetCategoryBreadcrum(List<Category> breadcrumb, Category category, int currentLevel, int maxLevel, bool showHidden = false)
         {
             if (category.ParentId == 0 || currentLevel == maxLevel)
                 return breadcrumb;
 
             var parentCategory = await _categoryRepository.FindByIdAsync(category.ParentId);
-            if (parentCategory == null)
+            if (parentCategory == null || parentCategory.Deleted || (!showHidden && !parentCategory.Published))
                 return breadcrumb;
             breadcrumb.Add(parentCategory);
-            await _GetCategoryBreadcrum(breadcrumb, parentCategory, currentLevel + 1, maxLevel);
+            await _GetCategoryBreadcrum(breadcrumb, parentCategory, currentLevel + 1, maxLevel, showHidden);
             return breadcrumb;
         }
 
-        public async Task<IPagedList<Category>> GetPagedCategoriesAsync(int pageNumber, int pageSize)
+        public async Task<IPagedList<Category>> GetPagedCategoriesAsync(int pageNumber, int pageSize, bool showHidden = false)
         {
             if(pageNumber < 1)
                 throw new ArgumentException("Page number must greater than or equal 1");
@@ -100,7 +103,8 @@ namespace Annstore.Services.Catalog
                 throw new ArgumentException("Page size must greater than 0");
 
             var query = from category in _categoryRepository.Table
-                        orderby category.Id
+                        where !category.Deleted && (showHidden || category.Published)
+                        orderby category.Id descending
                         select category;
             //*TODO*
             var allCategories = await query.ToListAsync();

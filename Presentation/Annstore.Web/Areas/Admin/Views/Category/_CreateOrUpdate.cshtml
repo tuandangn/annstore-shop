@@ -12,19 +12,39 @@
             </div>
             <div class="form-group">
                 <label asp-for="ParentId">Danh mục cha</label>
-                <select class="form-control" asp-for="ParentId">
-                    <option value="0" selected="@(Model.ParentId == 0)"></option>
-                    @foreach (var item in Model.ParentableCategories)
-                    {
-                        <option value="@item.Id" selected="@(Model.ParentId == item.Id)">@item.Breadcrumb</option>
-                    }
-                </select>
+                @if (Model.ParentableCategories.Count > 0)
+                {
+                    <select class="custom-select" asp-for="ParentId">
+                        <option value="0" selected="@(Model.ParentId == 0)"></option>
+                        @foreach (var item in Model.ParentableCategories)
+                        {
+                            <option value="@item.Id" selected="@(Model.ParentId == item.Id)">@item.Breadcrumb</option>
+                        }
+                    </select>
+                }
+                else
+                {
+
+                    <select class="form-control" asp-for="ParentId" disabled></select>
+                }
                 <span class="text-muted" asp-validation-for="Name"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description">Mô tả</label>
+                <textarea class="form-control" asp-for="Description"></textarea>
+                <span class="text-muted" asp-validation-for="Description"></span>
             </div>
             <div class="form-group">
                 <label asp-for="DisplayOrder">Thứ tự</label>
                 <input asp-for="DisplayOrder" class="form-control" />
                 <span class="text-muted" asp-validation-for="DisplayOrder"></span>
+            </div>
+            <div class="form-group">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" asp-for="Published">
+                    <label class="custom-control-label" asp-for="Published">Hiển thị</label>
+                </div>
+                <span class="text-muted" asp-validation-for="Published"></span>
             </div>
             <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Lưu lại</button>
         </form>

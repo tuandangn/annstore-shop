@@ -20,6 +20,10 @@ namespace Annstore.Web.Areas.Admin.Models.Categories
 
         public int ParentId { get; set; }
 
+        public bool Published { get; set; }
+
+        public string Description { get; set; }
+
         public IList<CategorySimpleModel> ParentableCategories { get; set; }
     }
 }

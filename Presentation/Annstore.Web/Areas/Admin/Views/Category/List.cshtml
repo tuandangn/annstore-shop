@@ -30,6 +30,9 @@
                             <th class="text-right">
                                 Thứ tự
                             </th>
+                            <th class="text-center">
+                                Hiển thị
+                            </th>
                             <th></th>
                         </tr>
                         @foreach (var item in Model.Categories)
@@ -44,7 +47,17 @@
                                 <td class="text-right">
                                     @item.DisplayOrder
                                 </td>
-                                <td class="text-right">
+                                <td class="text-center">
+                                    @if (item.Published)
+                                    {
+                                        <i class="fa fa-check"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa fa-times"></i>
+                                    }
+                                </td>
+                                <td class="text-right w-auto">
                                     <form method="POST" asp-antiforgery="true" asp-action="Delete">
                                         <input type="hidden" name="id" value="@item.Id" />
                                         <div class="btn-group" role="group" aria-label="actions">
@@ -52,7 +65,7 @@
                                                 <i class="fa fa-pencil-alt">&nbsp;</i>
                                                 <span class="sr-only">Chỉnh sửa</span>
                                             </a>
-                                            <button class="btn btn-light" type="submit">
+                                            <button class="btn btn-light delete-category-btn" type="submit">
                                                 <i class="fa fa-trash">&nbsp;</i>
                                                 <span class="sr-only">Xóa</span>
                                             </button>
@@ -63,7 +76,7 @@
                         }
                     </table>
                 </div>
-                <partial name="_Pager" model="Model"/>
+                <partial name="_Pager" model="Model" />
             </div>
         }
         else
@@ -72,3 +85,6 @@
         }
     </div>
 </div>
+@section Scripts{
+    <script src="~/pages/admin/category-page.js" defer></script>
+}

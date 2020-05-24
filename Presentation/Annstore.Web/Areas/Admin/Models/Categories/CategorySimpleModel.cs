@@ -11,6 +11,8 @@ namespace Annstore.Web.Areas.Admin.Models.Categories
 
         public int DisplayOrder { get; set; }
 
+        public bool Published { get; set; }
+
         public string Breadcrumb { get; set; }
     }
 }

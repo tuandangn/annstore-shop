@@ -39,6 +39,10 @@
         "umd/popper.min.js",
         "umd/popper.min.js.map"
       ]
+    },
+    {
+      "library": "tinymce@5.3.0",
+      "destination": "wwwroot/lib/tinymce/"
     }
   ]
 }

@@ -35,6 +35,8 @@ namespace Annstore.Web.Infrastructure
             public bool UseParentAsTarget { get; set; }
 
             public int DeepLevel { get; set; }
+
+            public bool ShowHidden { get; set; }
         }
     }
 }

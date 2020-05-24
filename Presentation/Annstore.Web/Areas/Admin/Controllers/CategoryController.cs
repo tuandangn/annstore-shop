@@ -28,10 +28,10 @@ namespace Annstore.Web.Areas.Admin.Controllers
         #region Actions
         public IActionResult Index() => RedirectToAction(nameof(List));
 
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(int page = 1, int size = 0)
         {
             var categorySettings = _categorySettingsSnapshot.Value;
-            var categoryListOptions = _GetCategoryListOptions(categorySettings);
+            var categoryListOptions = _GetCategoryListOptions(categorySettings, page, size);
             var model = await _adminCategoryService.GetCategoryListModelAsync(categoryListOptions);
 
             return View(model);
@@ -137,9 +137,14 @@ namespace Annstore.Web.Areas.Admin.Controllers
         #endregion
 
         #region Helpers
-        private CategoryListOptions _GetCategoryListOptions(CategorySettings settings)
+        private CategoryListOptions _GetCategoryListOptions(CategorySettings settings, int page, int size)
         {
+            if (page < 1) page = 1;
+            if (size <= 0) size = settings.Admin.DefaultPageSize;
+
             CategoryListOptions options = new CategoryListOptions();
+            options.PageNumber = page;
+            options.PageSize = size;
             options.Breadcrumb = _GetBreadcrumbOptions(settings.Admin.Breadcrumb);
             return options;
         }

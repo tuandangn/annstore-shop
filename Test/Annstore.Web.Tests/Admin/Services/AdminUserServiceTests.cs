@@ -1,4 +1,5 @@
-﻿using Annstore.Core.Entities.Users;
+﻿using Annstore.Core.Entities.Catalog;
+using Annstore.Core.Entities.Users;
 using Annstore.Web.Areas.Admin.Models.Users;
 using Annstore.Web.Areas.Admin.Services.Users;
 using Annstore.Web.Areas.Admin.Services.Users.Options;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TestHelper;
 using Xunit;
@@ -27,6 +29,28 @@ namespace Annstore.Web.Tests.Admin.Services
 
         #region GetUserListModelAsync
         [Fact]
+        public async Task GetUserListModelAsync_OptionPageNumberLessThanOne_ThrowArgumentException()
+        {
+            var pageNumber = 0;
+            var userListOptions = new UserListOptions { PageNumber = pageNumber };
+            var userManagerStub = GetDefaultUserManager();
+            var adminUserService = new AdminUserService(userManagerStub.Object, Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentException>(() => adminUserService.GetUserListModelAsync(userListOptions));
+        }
+
+        [Fact]
+        public async Task GetUserListModelAsync_OptionPageSizeLessThanOrEqualZero_ThrowArgumentException()
+        {
+            var pageSize = 0;
+            var userListOptions = new UserListOptions { PageNumber = 1, PageSize = pageSize };
+            var userManagerStub = GetDefaultUserManager();
+            var adminUserService = new AdminUserService(userManagerStub.Object, Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentException>(() => adminUserService.GetUserListModelAsync(userListOptions));
+        }
+
+        [Fact]
         public async Task GetUserListModelAsync_ReturnAllMappedUserSimpleModels()
         {
             var testUser = new AppUser { Id = 1 };
@@ -41,7 +65,7 @@ namespace Annstore.Web.Tests.Admin.Services
                 .Returns(testModel)
                 .Verifiable();
             var adminUserService = new AdminUserService(userManagerMock.Object, mapperMock.Object);
-            var userListOptions = default(UserListOptions);
+            var userListOptions = new UserListOptions { PageNumber = 1, PageSize = int.MaxValue };
 
             var userListModel = await adminUserService.GetUserListModelAsync(userListOptions);
 
@@ -49,6 +73,35 @@ namespace Annstore.Web.Tests.Admin.Services
             Assert.Equal(testModel, userListModel.Users[0]);
             userManagerMock.Verify();
             mapperMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetUserListModelAsync_Pagination_PagedUserSimpleModels()
+        {
+            var pageNumber = 2;
+            var pageSize = 3;
+            var testUser = new AppUser { Id = 4 };
+            var testModel = new UserSimpleModel { Id = testUser.Id };
+            var users = new List<AppUser> {
+                new AppUser{Id = 1},new AppUser{Id = 2},new AppUser{Id = 3},
+                testUser
+            };
+            var userListOptions = new UserListOptions { PageNumber = pageNumber, PageSize = pageSize };
+            var userManagerMock = GetDefaultUserManager();
+            userManagerMock.Setup(u => u.Users)
+                .Returns(users.ToAsync())
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map<UserSimpleModel>(testUser))
+                .Returns(testModel);
+            var adminUserService = new AdminUserService(userManagerMock.Object, mapperStub.Object);
+
+            var userListModel = await adminUserService.GetUserListModelAsync(userListOptions);
+
+            Assert.Equal(2, userListModel.TotalPages);
+            Assert.Equal(1, userListModel.Users.Count);
+            Assert.Equal(testUser.Id, userListModel.Users.ElementAt(0).Id);
+            userManagerMock.Verify();
         }
 
         #endregion

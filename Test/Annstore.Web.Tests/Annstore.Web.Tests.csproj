@@ -17,7 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Domain\Annstore.Core\Annstore.Core.csproj" />
     <ProjectReference Include="..\..\Domain\Annstore.Services\Annstore.Services.csproj" />
-    <ProjectReference Include="..\..\Presentation\AnnstoreShop.Web\Annstore.Web.csproj" />
+    <ProjectReference Include="..\..\Presentation\Annstore.Web\Annstore.Web.csproj" />
     <ProjectReference Include="..\TestHelper\Annstore.TestHelper.csproj" />
   </ItemGroup>
 

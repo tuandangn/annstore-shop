@@ -10,6 +10,7 @@ using System;
 using Annstore.Web.Infrastructure;
 using Annstore.Web.Areas.Admin.Services.Categories;
 using Annstore.Web.Areas.Admin.Services.Categories.Options;
+using Annstore.Core.Common;
 
 namespace Annstore.Web.Tests.Admin.Services
 {
@@ -224,23 +225,48 @@ namespace Annstore.Web.Tests.Admin.Services
             var category = new Category { Id = 1 };
             var mappedModel = new CategorySimpleModel { Id = category.Id };
             var allCategories = new List<Category> { category };
+            var categoryListOptions = new CategoryListOptions { PageNumber = 1, PageSize = int.MaxValue };
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetCategoriesAsync())
-                .ReturnsAsync(allCategories)
+            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize))
+                .ReturnsAsync(allCategories.ToPagedList(categoryListOptions.PageSize, categoryListOptions.PageNumber, 12))
                 .Verifiable();
             var mapperMock = new Mock<IMapper>();
             mapperMock.Setup(m => m.Map<CategorySimpleModel>(category))
                 .Returns(mappedModel)
                 .Verifiable();
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, mapperMock.Object);
-            var categorySettings = new CategoryListOptions();
 
-            var categoryListModel = await adminCategoryService.GetCategoryListModelAsync(categorySettings);
+            var categoryListModel = await adminCategoryService.GetCategoryListModelAsync(categoryListOptions);
 
             Assert.Single(categoryListModel.Categories);
             Assert.Equal(mappedModel, categoryListModel.Categories[0]);
             categoryServiceMock.Verify();
             mapperMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetCategoryListModelAsync_Pagination_ReturnPagedCategories()
+        {
+            var category = new Category { Id = 2 };
+            var mappedModel = new CategorySimpleModel { Id = category.Id };
+            var allCategories = new List<Category> { category };
+            var totalItems = 3;
+            var categoryListOptions = new CategoryListOptions { PageNumber = 2, PageSize = 1 };
+            var categoryServiceMock = new Mock<ICategoryService>();
+            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize))
+                .ReturnsAsync(allCategories.ToPagedList(categoryListOptions.PageSize, categoryListOptions.PageNumber, totalItems))
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map<CategorySimpleModel>(category))
+                .Returns(mappedModel);
+            var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, mapperStub.Object);
+
+            var categoryListModel = await adminCategoryService.GetCategoryListModelAsync(categoryListOptions);
+
+            Assert.Equal(3, categoryListModel.TotalPages);
+            Assert.Equal(3, categoryListModel.TotalItems);
+            Assert.Equal(2, categoryListModel.Categories[0].Id);
+            categoryServiceMock.Verify();
         }
 
         [Fact]
@@ -255,7 +281,9 @@ namespace Annstore.Web.Tests.Admin.Services
                     Enable = true,
                     DeepLevel = deepLevel,
                     Separator = separator
-                }
+                },
+                PageSize = int.MaxValue,
+                PageNumber = 1
             };
             var category = new Category { Id = 1, Name = "A" };
             var categoryBreadcrumb = new List<Category> { new Category { Name = "B" }, category };
@@ -263,8 +291,8 @@ namespace Annstore.Web.Tests.Admin.Services
             var mappedModel = new CategorySimpleModel { Id = category.Id };
             var allCategories = new List<Category> { category };
             var categoryServiceMock = new Mock<ICategoryService>();
-            categoryServiceMock.Setup(c => c.GetCategoriesAsync())
-                .ReturnsAsync(allCategories);
+            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize))
+                .ReturnsAsync(allCategories.ToPagedList(categoryListOptions.PageSize, categoryListOptions.PageNumber, 12));
             categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(category, deepLevel))
                 .ReturnsAsync(categoryBreadcrumb)
                 .Verifiable();
@@ -285,7 +313,7 @@ namespace Annstore.Web.Tests.Admin.Services
             var separator = "|";
             var deepLevel = 9;
             var parentOnly = true;
-            CategoryListOptions categoryListOptions = new CategoryListOptions
+            var categoryListOptions = new CategoryListOptions
             {
                 Breadcrumb = new BreadcrumbOptions
                 {
@@ -293,7 +321,9 @@ namespace Annstore.Web.Tests.Admin.Services
                     DeepLevel = deepLevel,
                     Separator = separator,
                     UseParentAsTarget = parentOnly
-                }
+                },
+                PageSize = int.MaxValue,
+                PageNumber = 1
             };
             var category = new Category { Id = 1, Name = "A", ParentId = 2 };
             var parentCategory = new Category { Id = 2, Name = "B" };
@@ -305,8 +335,8 @@ namespace Annstore.Web.Tests.Admin.Services
             categoryServiceMock.Setup(c => c.GetCategoryByIdAsync(category.ParentId))
                 .ReturnsAsync(parentCategory)
                 .Verifiable();
-            categoryServiceMock.Setup(c => c.GetCategoriesAsync())
-                .ReturnsAsync(allCategories);
+            categoryServiceMock.Setup(c => c.GetPagedCategoriesAsync(categoryListOptions.PageNumber, categoryListOptions.PageSize))
+                .ReturnsAsync(allCategories.ToPagedList(categoryListOptions.PageSize, categoryListOptions.PageNumber, 12));
             categoryServiceMock.Setup(c => c.GetCategoryBreadcrumbAsync(parentCategory, deepLevel))
                 .ReturnsAsync(categoryBreadcrumb);
             var mapperStub = new Mock<IMapper>();
@@ -572,7 +602,7 @@ namespace Annstore.Web.Tests.Admin.Services
         [Fact]
         public async Task GetCategoryBreadcrumbStringAsync_UseParentAsTarget_ReturnParentBreadcrumb()
         {
-            var useParentAsTarget = true; 
+            var useParentAsTarget = true;
             var category = new Category { ParentId = 1 };
             var parentCategory = new Category { Id = 1 };
             var separator = ">>>";

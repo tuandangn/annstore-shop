@@ -1,0 +1,25 @@
+﻿@model PagedModel
+@if (Model.TotalPages > 1)
+{
+    <div>
+        <nav>
+            <ul class="pagination">
+                @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                {
+                    if (pageNumber == Model.PageNumber)
+                    {
+                        <li class="page-item active">
+                            <a class="page-link" href="#">@pageNumber <span class="sr-only">(current)</span></a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-route-page="@pageNumber">@pageNumber</a>
+                        </li>
+                    }
+                }
+            </ul>
+        </nav>
+    </div>
+}

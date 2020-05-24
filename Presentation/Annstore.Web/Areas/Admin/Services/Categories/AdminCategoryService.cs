@@ -28,9 +28,12 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
 
         public async Task<CategoryListModel> GetCategoryListModelAsync(CategoryListOptions options)
         {
-            var categories = await _categoryService.GetCategoriesAsync().ConfigureAwait(false);
+            var pagedCategories = await _categoryService.GetPagedCategoriesAsync(
+                options.PageNumber,
+                options.PageSize
+            ).ConfigureAwait(false);
             var categoryModels = new List<CategorySimpleModel>();
-            foreach (var category in categories)
+            foreach (var category in pagedCategories)
             {
                 var simpleModel = _mapper.Map<CategorySimpleModel>(category);
 
@@ -47,7 +50,11 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
 
             var model = new CategoryListModel
             {
-                Categories = categoryModels
+                Categories = categoryModels,
+                PageNumber = pagedCategories.PageNumber,
+                PageSize = pagedCategories.PageSize,
+                TotalItems = pagedCategories.TotalItems,
+                TotalPages = pagedCategories.TotalPages
             };
 
             return model;

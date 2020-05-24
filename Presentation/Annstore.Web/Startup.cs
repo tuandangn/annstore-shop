@@ -65,6 +65,9 @@ namespace Annstore.Web
             var categorySettingsSection = _configuration.GetSection("CategorySettings");
             services.Configure<CategorySettings>(categorySettingsSection);
 
+            var userSettingsSection = _configuration.GetSection("UserSettings");
+            services.Configure<UserSettings>(userSettingsSection);
+
             services.Configure<IdentityOptions>(options =>
             {
                 // Password settings.

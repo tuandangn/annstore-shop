@@ -2,7 +2,7 @@
 
 namespace Annstore.Core.Common
 {
-    public interface IPagedList<out T>
+    public interface IPagedList<out T> : IEnumerable<T>
     {
         int PageSize { get; }
 

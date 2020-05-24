@@ -52,7 +52,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
         }
 
         [Fact]
-        public async Task List_PaginationInfoInvalid_DefaultValues()
+        public async Task List_PaginationInfoInvalid_UseDefaultValues()
         {
             var page = 0;
             var size = -1;

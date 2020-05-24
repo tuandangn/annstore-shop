@@ -6,6 +6,7 @@ using Annstore.Web.Areas.Admin.Services.Users.Options;
 using Annstore.Web.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.Threading.Tasks;
 using Xunit;
@@ -14,11 +15,27 @@ namespace Annstore.Web.Tests.Admin.Controllers
 {
     public class UserControllerTests
     {
+        #region Helper
+        private IOptionsSnapshot<UserSettings> GetDefaultUserOptions(int defaultPageSize = int.MaxValue)
+        {
+            var userSettings = new UserSettings
+            {
+                Admin = new UserSettings.AdminUserSettings { DefaultPageSize = defaultPageSize }
+            };
+            var userSettingsSnapshotStub = new Mock<IOptionsSnapshot<UserSettings>>();
+            userSettingsSnapshotStub.Setup(u => u.Value)
+                .Returns(userSettings);
+
+            return userSettingsSnapshotStub.Object;
+        }
+
+        #endregion
+
         #region Index
         [Fact]
         public void Index_RedirectToList()
         {
-            var userController = new UserController(Mock.Of<IAdminUserService>());
+            var userController = new UserController(Mock.Of<IAdminUserService>(), GetDefaultUserOptions());
 
             var result = userController.Index();
 
@@ -37,9 +54,32 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminUserServiceMock.Setup(a => a.GetUserListModelAsync(It.IsAny<UserListOptions>()))
                 .ReturnsAsync(userListModel)
                 .Verifiable();
-            var userController = new UserController(adminUserServiceMock.Object);
+            var userController = new UserController(adminUserServiceMock.Object, GetDefaultUserOptions());
 
             var result = await userController.List();
+
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.Equal(userListModel, viewResult.Model);
+            adminUserServiceMock.Verify();
+        }
+
+        [Fact]
+        public async Task List_PaginationInfoInvalid_UseDefaultValues()
+        {
+            var defaultPageSize = 12;
+            var page = 0;
+            var size = 0;
+            var userListModel = new UserListModel(); 
+            var adminUserServiceMock = new Mock<IAdminUserService>();
+            adminUserServiceMock.Setup(a => a.GetUserListModelAsync(
+                It.Is<UserListOptions>(opts =>
+                    opts.PageNumber == 1 && opts.PageSize == defaultPageSize
+                )))
+                .ReturnsAsync(userListModel)
+                .Verifiable();
+            var userController = new UserController(adminUserServiceMock.Object, GetDefaultUserOptions(defaultPageSize));
+
+            var result = await userController.List(page, size);
 
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.Equal(userListModel, viewResult.Model);
@@ -52,7 +92,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
         [Fact]
         public void Create_ReturnValidModel()
         {
-            var userController = new UserController(Mock.Of<IAdminUserService>());
+            var userController = new UserController(Mock.Of<IAdminUserService>(), GetDefaultUserOptions());
 
             var result = userController.Create();
 
@@ -68,7 +108,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task CreatePost_ModelIsInvalid_RedisplayView()
         {
             var invalidUserModel = new UserModel();
-            var userController = new UserController(Mock.Of<IAdminUserService>());
+            var userController = new UserController(Mock.Of<IAdminUserService>(), GetDefaultUserOptions());
             userController.ModelState.AddModelError("error", "error");
 
             var result = await userController.Create(invalidUserModel);
@@ -87,7 +127,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminUserServiceMock.Setup(u => u.CreateUserAsync(It.Is<AppRequest<UserModel>>(req => req.Data == userModel)))
                 .ReturnsAsync(createSuccessResponse)
                 .Verifiable();
-            var userController = new UserController(adminUserServiceMock.Object);
+            var userController = new UserController(adminUserServiceMock.Object, GetDefaultUserOptions());
             userController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await userController.Create(userModel);
@@ -107,7 +147,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminUserServiceMock.Setup(u => u.CreateUserAsync(It.Is<AppRequest<UserModel>>(req => req.Data == userModel)))
                 .ReturnsAsync(createErrorResponse)
                 .Verifiable();
-            var userController = new UserController(adminUserServiceMock.Object);
+            var userController = new UserController(adminUserServiceMock.Object, GetDefaultUserOptions());
             userController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await userController.Create(userModel);
@@ -130,7 +170,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminUserServiceMock.Setup(a => a.DeleteUserAsync(It.Is<AppRequest<int>>(req => req.Data == notFoundUserId)))
                 .ReturnsAsync(deleteUserModelInvalidResponse)
                 .Verifiable();
-            var userController = new UserController(adminUserServiceMock.Object);
+            var userController = new UserController(adminUserServiceMock.Object, GetDefaultUserOptions());
             userController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await userController.Delete(notFoundUserId);
@@ -149,7 +189,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminUserServiceMock.Setup(a => a.DeleteUserAsync(It.Is<AppRequest<int>>(req => req.Data == deleteUserId)))
                 .ReturnsAsync(deleteUserErrorResponse)
                 .Verifiable();
-            var userController = new UserController(adminUserServiceMock.Object);
+            var userController = new UserController(adminUserServiceMock.Object, GetDefaultUserOptions());
             userController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await userController.Delete(deleteUserId);
@@ -168,7 +208,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
             adminUserServiceMock.Setup(a => a.DeleteUserAsync(It.Is<AppRequest<int>>(req => req.Data == deleteUserId)))
                 .ReturnsAsync(deleteUserSuccessResponse)
                 .Verifiable();
-            var userController = new UserController(adminUserServiceMock.Object);
+            var userController = new UserController(adminUserServiceMock.Object, GetDefaultUserOptions());
             userController.TempData = Mock.Of<ITempDataDictionary>();
 
             var result = await userController.Delete(deleteUserId);

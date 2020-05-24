@@ -97,7 +97,7 @@ namespace Annstore.Services.Catalog
             if(pageNumber < 1)
                 throw new ArgumentException("Page number must greater than or equal 1");
             if(pageSize <= 0)
-                throw new ArgumentException("Page size must greater than or equal 0");
+                throw new ArgumentException("Page size must greater than 0");
 
             var query = from category in _categoryRepository.Table
                         orderby category.Id

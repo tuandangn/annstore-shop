@@ -4,6 +4,7 @@ using Annstore.Web.Areas.Admin.Services.Users;
 using Annstore.Web.Areas.Admin.Services.Users.Options;
 using Annstore.Web.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 
 namespace Annstore.Web.Areas.Admin.Controllers
@@ -11,17 +12,25 @@ namespace Annstore.Web.Areas.Admin.Controllers
     public sealed class UserController : AdminControllerBase
     {
         private readonly IAdminUserService _adminUserService;
+        private readonly IOptionsSnapshot<UserSettings> _userSettingsSnapshot;
 
-        public UserController(IAdminUserService adminUserService)
+        public UserController(IAdminUserService adminUserService, IOptionsSnapshot<UserSettings> userSettingsSnapshot)
         {
             _adminUserService = adminUserService;
+            _userSettingsSnapshot = userSettingsSnapshot;
         }
 
         public IActionResult Index() => RedirectToAction(nameof(List));
 
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(int page = 1, int size = 0)
         {
-            var options = new UserListOptions();
+            if (page < 1) page = 1;
+            if (size <= 0)
+            {
+                var userSettings = _userSettingsSnapshot.Value;
+                size = userSettings.Admin.DefaultPageSize;
+            }
+            var options = new UserListOptions { PageNumber = page, PageSize = size };
             var model = await _adminUserService.GetUserListModelAsync(options);
 
             return View(model);

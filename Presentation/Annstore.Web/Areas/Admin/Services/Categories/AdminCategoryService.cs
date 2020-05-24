@@ -33,7 +33,7 @@ namespace Annstore.Web.Areas.Admin.Services.Categories
                 options.PageSize
             ).ConfigureAwait(false);
             var categoryModels = new List<CategorySimpleModel>();
-            foreach (var category in pagedCategories.Items)
+            foreach (var category in pagedCategories)
             {
                 var simpleModel = _mapper.Map<CategorySimpleModel>(category);
 

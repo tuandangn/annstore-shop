@@ -264,5 +264,166 @@ namespace Annstore.Web.Tests.Admin.Services
         }
 
         #endregion
+
+        #region GetUserModelAsync
+        [Fact]
+        public async Task GetUserModelAsync_UserIsNotFound_ReturnNull()
+        {
+            var notFoundUserId = 0;
+            var userManagerMock = GetDefaultUserManager();
+            userManagerMock.Setup(u => u.FindByIdAsync(notFoundUserId.ToString()))
+                .ReturnsAsync((AppUser)null)
+                .Verifiable();
+            var adminUserService = new AdminUserService(userManagerMock.Object, Mock.Of<IMapper>());
+
+            var result = await adminUserService.GetUserModelAsync(notFoundUserId);
+
+            Assert.Null(result);
+            userManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetUserModelAsync_UserIsFound_ReturnMappedModel()
+        {
+            var userId = 1;
+            var user = new AppUser { Id = userId };
+            var userModel = new UserModel { Id = userId };
+            var userManagerMock = GetDefaultUserManager();
+            userManagerMock.Setup(u => u.FindByIdAsync(userId.ToString()))
+                .ReturnsAsync(user);
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map<UserModel>(user))
+                .Returns(userModel)
+                .Verifiable();
+            var adminUserService = new AdminUserService(userManagerMock.Object, mapperMock.Object);
+
+            var result = await adminUserService.GetUserModelAsync(userId);
+
+            Assert.Equal(userModel, result);
+            mapperMock.Verify();
+        }
+
+        #endregion
+
+        #region UpdateUserAsync
+        [Fact]
+        public async Task UpdateUserAsync_RequestIsNull_ThrowArgumentNullException()
+        {
+            var adminUserService = new AdminUserService(GetDefaultUserManager().Object, Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => adminUserService.UpdateUserAsync(null));
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_UserIsNotFound_ModelInvalidResponse()
+        {
+            var notFoundUserId = 0;
+            var userModel = new UserModel { Id = notFoundUserId };
+            var userManagerMock = GetDefaultUserManager();
+            userManagerMock.Setup(u => u.FindByIdAsync(notFoundUserId.ToString()))
+                .ReturnsAsync((AppUser)null)
+                .Verifiable();
+            var adminUserService = new AdminUserService(userManagerMock.Object, Mock.Of<IMapper>());
+            var updateUserRequest = new AppRequest<UserModel>(userModel);
+
+            var response = await adminUserService.UpdateUserAsync(updateUserRequest);
+
+            Assert.False(response.Success);
+            Assert.True(response.ModelIsInvalid);
+            userManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_UpdateUserSuccess_SuccessResponse()
+        {
+            var userId = 1;
+            var user = new AppUser { Id = userId };
+            var userModel = new UserModel { Id = userId };
+            var mappedUser = new AppUser { Id = userId };
+            var updateUserResult = IdentityResult.Success;
+            var userManagerMock = GetDefaultUserManager();
+            userManagerMock.Setup(m => m.FindByIdAsync(userId.ToString()))
+                .ReturnsAsync(user);
+            userManagerMock.Setup(m => m.UpdateAsync(mappedUser))
+                .ReturnsAsync(updateUserResult)
+                .Verifiable();
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map<UserModel, AppUser>(userModel, user))
+                .Returns(mappedUser)
+                .Verifiable();
+            var adminUserService = new AdminUserService(userManagerMock.Object, mapperMock.Object);
+            var updateUserRequest = new AppRequest<UserModel>(userModel);
+
+            var response = await adminUserService.UpdateUserAsync(updateUserRequest);
+
+            Assert.True(response.Success);
+            userManagerMock.Verify();
+            mapperMock.Verify();
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_RemovePasswordError_ErrorResponse()
+        {
+            var userId = 1;
+            var user = new AppUser { Id = userId };
+            var userModel = new UserModel { Id = userId, Password = "change password" };
+            var mappedUser = new AppUser { Id = userId };
+            var updateUserResult = IdentityResult.Success;
+            var removePasswordResult = IdentityResult.Failed();
+            var userManagerMock = GetDefaultUserManager();
+            userManagerMock.Setup(m => m.FindByIdAsync(userId.ToString()))
+                .ReturnsAsync(user);
+            userManagerMock.Setup(m => m.UpdateAsync(mappedUser))
+                .ReturnsAsync(updateUserResult);
+            userManagerMock.Setup(m => m.RemovePasswordAsync(mappedUser))
+                .ReturnsAsync(removePasswordResult)
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map<UserModel, AppUser>(userModel, user))
+                .Returns(mappedUser)
+                .Verifiable();
+            var adminUserService = new AdminUserService(userManagerMock.Object, mapperStub.Object);
+            var updateUserRequest = new AppRequest<UserModel>(userModel);
+
+            var response = await adminUserService.UpdateUserAsync(updateUserRequest);
+
+            Assert.False(response.Success);
+            userManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_AddPasswordError_ErrorResponse()
+        {
+            var userId = 1;
+            var user = new AppUser { Id = userId };
+            var userModel = new UserModel { Id = userId, Password = "change password" };
+            var mappedUser = new AppUser { Id = userId };
+            var updateUserResult = IdentityResult.Success;
+            var removePasswordResult = IdentityResult.Success;
+            var addPasswordResult = IdentityResult.Failed();
+            var userManagerMock = GetDefaultUserManager();
+            userManagerMock.Setup(m => m.FindByIdAsync(userId.ToString()))
+                .ReturnsAsync(user);
+            userManagerMock.Setup(m => m.UpdateAsync(mappedUser))
+                .ReturnsAsync(updateUserResult);
+            userManagerMock.Setup(m => m.RemovePasswordAsync(mappedUser))
+                .ReturnsAsync(removePasswordResult);
+            userManagerMock.Setup(m => m.AddPasswordAsync(mappedUser, userModel.Password))
+                .ReturnsAsync(addPasswordResult)
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map<UserModel, AppUser>(userModel, user))
+                .Returns(mappedUser)
+                .Verifiable();
+            var adminUserService = new AdminUserService(userManagerMock.Object, mapperStub.Object);
+            var updateUserRequest = new AppRequest<UserModel>(userModel);
+
+            var response = await adminUserService.UpdateUserAsync(updateUserRequest);
+
+            Assert.False(response.Success);
+            userManagerMock.Verify();
+        }
+
+        #endregion
     }
 }

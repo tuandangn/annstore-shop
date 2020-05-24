@@ -5,6 +5,7 @@ using Annstore.Web.Areas.Admin.Services.Users.Options;
 using Annstore.Web.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System;
 using System.Threading.Tasks;
 
 namespace Annstore.Web.Areas.Admin.Controllers
@@ -81,6 +82,39 @@ namespace Annstore.Web.Areas.Admin.Controllers
                 TempData[AdminDefaults.ErrorMessage] = AdminMessages.User.DeleteUserError;
             }
             return RedirectToAction(nameof(List));
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var model = await _adminUserService.GetUserModelAsync(id);
+
+            if (model == null)
+                return RedirectToAction(nameof(List));
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(UserModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var updateUserRequest = new AppRequest<UserModel>(model);
+                var updateUserResponse = await _adminUserService.UpdateUserAsync(updateUserRequest);
+
+                if (updateUserResponse.Success)
+                {
+                    TempData[AdminDefaults.SuccessMessage] = AdminMessages.User.UpdateUserSuccess;
+                    return RedirectToAction(nameof(List));
+                }
+                else if (updateUserResponse.ModelIsInvalid)
+                {
+                    TempData[AdminDefaults.ErrorMessage] = AdminMessages.User.UserIsNotFound;
+                    return RedirectToAction(nameof(List));
+                }
+                ModelState.AddModelError(string.Empty, updateUserResponse.Message);
+            }
+            return View(model);
         }
     }
 }

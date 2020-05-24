@@ -92,5 +92,48 @@ namespace Annstore.Web.Areas.Admin.Services.Users
 
             return model;
         }
+
+        public async Task<UserModel> GetUserModelAsync(int id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+                return null;
+
+            var model = _mapper.Map<UserModel>(user);
+
+            return model;
+        }
+
+        public async Task<AppResponse<AppUser>> UpdateUserAsync(AppRequest<UserModel> request)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            var model = request.Data;
+            var user = await _userManager.FindByIdAsync(model.Id.ToString());
+            if (user == null)
+                return AppResponse.InvalidModelResult<AppUser>(AdminMessages.User.UserIsNotFound);
+            user = _mapper.Map<UserModel, AppUser>(model, user);
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (updateResult.Succeeded)
+            {
+                if (!string.IsNullOrEmpty(model.Password))
+                {
+                    var removePasswordResult = await _userManager.RemovePasswordAsync(user);
+                    if (removePasswordResult.Succeeded)
+                    {
+                        var addPasswordResult = await _userManager.AddPasswordAsync(user, model.Password);
+                        if (addPasswordResult.Succeeded)
+                        {
+                            return AppResponse.SuccessResult(user);
+                        }
+                    }
+                    return AppResponse.ErrorResult<AppUser>(AdminMessages.User.UpdateUserError);
+                }
+                return AppResponse.SuccessResult(user);
+            }
+            return AppResponse.ErrorResult<AppUser>(AdminMessages.User.UpdateUserError);
+        }
     }
 }

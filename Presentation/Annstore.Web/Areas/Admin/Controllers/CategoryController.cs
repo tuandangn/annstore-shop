@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using Annstore.Web.Areas.Admin.Models.Categories;
-using Annstore.Web.Areas.Admin.Infrastructure;
-using Annstore.Web.Infrastructure;
 using Microsoft.Extensions.Options;
-using Annstore.Web.Areas.Admin.Services.Categories;
-using Annstore.Web.Areas.Admin.Services.Categories.Options;
+using Annstore.Application.Infrastructure;
+using Annstore.Application.Services.Categories;
+using Annstore.Application.Models.Admin.Categories;
+using Annstore.Application.Models.Admin.Common;
+using Annstore.Application.Infrastructure.Settings;
+using Annstore.Application.Infrastructure.Messages.Messages;
 
 namespace Annstore.Web.Areas.Admin.Controllers
 {

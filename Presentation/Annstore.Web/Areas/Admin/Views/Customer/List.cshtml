@@ -1,0 +1,65 @@
+﻿@model CustomerListModel
+@{
+    ViewData["Title"] = "Khách hàng";
+}
+
+<div class="row">
+    <div class="col-12 mt-5">
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="float-right mt-2">
+                    <a asp-action="Create" class="btn btn-success"><i class="fa fa-plus"></i> Thêm mới</a>
+                </div>
+                <h1>Khách hàng</h1>
+            </div>
+        </div>
+
+        @if (Model.Customers.Count > 0)
+        {
+            <div class="row">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr>
+                            <th>
+                                Họ tên
+                            </th>
+                            <th></th>
+                        </tr>
+                        @foreach (var item in Model.Customers)
+                        {
+                            <tr>
+                                <td>
+                                    @item.FullName
+                                </td>
+                                <td class="text-right w-auto">
+                                    <form method="POST" asp-antiforgery="true" asp-action="Delete">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <div class="btn-group" role="group" aria-label="actions">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-light">
+                                                <i class="fa fa-pencil-alt">&nbsp;</i>
+                                                <span class="sr-only">Chỉnh sửa</span>
+                                            </a>
+                                            <button class="btn btn-light delete-customer-btn" type="submit">
+                                                <i class="fa fa-trash">&nbsp;</i>
+                                                <span class="sr-only">Xóa</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <partial name="_Pager" model="Model" />
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">Hiện không có khách hàng nào</div>
+        }
+    </div>
+</div>
+@section Scripts{
+    <script src="~/pages/admin/customer-page.js"></script>
+}

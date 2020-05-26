@@ -9,14 +9,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using FluentValidation.AspNetCore;
-using Annstore.Web.Areas.Admin.Mappings;
-using Annstore.Web.Infrastructure;
-using Annstore.Core.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using System.Reflection;
-using Annstore.Web.Areas.Admin.Services.Categories;
-using Annstore.Web.Areas.Admin.Services.Users;
-using Annstore.Web.Services.Accounts;
+using Annstore.Application.Services.Categories;
+using Annstore.Auth;
+using Annstore.Auth.Entities;
+using Annstore.Application.Services.Customers;
+using Annstore.Application.Mappings;
+using Annstore.Services.Customers;
+using Annstore.Application.Infrastructure.Settings;
 
 namespace Annstore.Web
 {
@@ -33,17 +34,25 @@ namespace Annstore.Web
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var migrationAssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
             services.AddDbContext<AnnstoreDbContext>(
-                opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStringName),
-                sqlOpts => sqlOpts.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)));
-            services.AddIdentity<AppUser, AppRole>()
-                .AddEntityFrameworkStores<AnnstoreDbContext>()
+                opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Data),
+                sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
+            services.AddDbContext<AnnstoreAuthDbContext>(
+                opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Auth),
+                sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
+
+            services.AddIdentity<Account, Role>()
+                .AddEntityFrameworkStores<AnnstoreAuthDbContext>()
                 .AddDefaultTokenProviders();
+
             services.AddScoped<IDbContext, AnnstoreDbContext>();
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<ICustomerService, CustomerService>();
             services.AddTransient<IAdminCategoryService, AdminCategoryService>();
-            services.AddTransient<IAdminUserService, AdminUserService>();
+            services.AddTransient<IAdminCustomerService, AdminCustomerService>();
+            services.AddTransient<IAdminAccountService, AdminAccountService>();
             services.AddTransient<IAccountService, AccountService>();
 
             //auto mapper
@@ -66,7 +75,10 @@ namespace Annstore.Web
             services.Configure<CategorySettings>(categorySettingsSection);
 
             var userSettingsSection = _configuration.GetSection("UserSettings");
-            services.Configure<UserSettings>(userSettingsSection);
+            services.Configure<AccountSettings>(userSettingsSection);
+
+            var customerSettingsSection = _configuration.GetSection("CustomerSettings");
+            services.Configure<CustomerSettings>(customerSettingsSection);
 
             services.Configure<IdentityOptions>(options =>
             {

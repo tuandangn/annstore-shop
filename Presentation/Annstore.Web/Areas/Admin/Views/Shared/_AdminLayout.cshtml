@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.css">
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.css" />
     @await RenderSectionAsync("Styles", false)
-    <partial name="_ValidateScripts"/>
 </head>
 <body>
     <partial name="_Navbar" />
@@ -17,7 +16,7 @@
     <main class="container">
         @RenderBody()
     </main>
-
+    <partial name="_ValidateScripts"/>
     @await RenderSectionAsync("Scripts", false)
 </body>
 </html>

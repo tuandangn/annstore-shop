@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Annstore.Core;
-using Microsoft.EntityFrameworkCore;
 
 namespace Annstore.Data
 {

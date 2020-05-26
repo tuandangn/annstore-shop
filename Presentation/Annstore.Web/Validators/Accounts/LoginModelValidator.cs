@@ -1,4 +1,4 @@
-﻿using Annstore.Web.Models.Accounts;
+﻿using Annstore.Application.Models.Customers;
 using FluentValidation;
 
 namespace Annstore.Web.Validators.Accounts

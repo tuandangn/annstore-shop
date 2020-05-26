@@ -1,0 +1,31 @@
+﻿@model CustomerModel
+@{
+    ViewData["Title"] = "Chỉnh sửa người dùng";
+}
+
+<div class="row">
+    <div class="col-12 mt-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="float-right mt-2">
+                    <form method="POST" asp-action="Delete" asp-antiforgery="true">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="btn-group" role="group" aria-label="actions">
+                            <a asp-action="List" class="btn btn-light"><i class="fa fa-arrow-left"></i> Quay về</a>
+                            <button class="btn btn-light delete-customer-btn" type="submit">
+                                <i class="fa fa-trash">&nbsp;</i>
+                                <span>Xóa</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <h1>Chỉnh sửa - @Model.FullName</h1>
+            </div>
+        </div>
+
+        <partial name="_CreateOrUpdate" model="Model" />
+    </div>
+</div>
+@section Scripts{
+    <script src="~/pages/admin/customer-page.js"></script>
+}

@@ -1,9 +1,9 @@
-﻿using Annstore.Web.Areas.Admin.Models.Users;
+﻿using Annstore.Application.Models.Admin.Accounts;
 using FluentValidation;
 
 namespace Annstore.Web.Areas.Admin.Validators.Users
 {
-    public sealed class UserModelValidator : AbstractValidator<UserModel>
+    public sealed class UserModelValidator : AbstractValidator<AccountModel>
     {
         public UserModelValidator()
         {

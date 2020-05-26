@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Domain\Annstore.Core\Annstore.Core.csproj" />
+    <ProjectReference Include="..\..\Domain\Annstore.Services\Annstore.Services.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Annstore.Misc\Annstore.Auth.csproj" />
+  </ItemGroup>
+
+</Project>

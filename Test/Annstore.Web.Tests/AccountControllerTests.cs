@@ -1,8 +1,8 @@
-﻿using Annstore.Core.Entities.Users;
+﻿using Annstore.Application.Infrastructure;
+using Annstore.Application.Models.Customers;
+using Annstore.Application.Services.Customers;
+using Annstore.Auth.Entities;
 using Annstore.Web.Controllers;
-using Annstore.Web.Infrastructure;
-using Annstore.Web.Models.Accounts;
-using Annstore.Web.Services.Accounts;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Threading.Tasks;
@@ -29,7 +29,7 @@ namespace Annstore.Web.Tests
         public async Task LoginPost_LoginSuccess_RedirectToHomepage()
         {
             var loginModel = new LoginModel();
-            var successLoginResponse = AppResponse.SuccessResult<AppUser>(null);
+            var successLoginResponse = AppResponse.SuccessResult<Account>(null);
             var accountServiceMock = new Mock<IAccountService>();
             accountServiceMock.Setup(a => a.LoginAsync(It.Is<AppRequest<LoginModel>>(req => req.Data == loginModel)))
                 .ReturnsAsync(successLoginResponse)
@@ -49,7 +49,7 @@ namespace Annstore.Web.Tests
         {
             var returnUrl = "returnUrl";
             var loginModel = new LoginModel();
-            var successLoginResponse = AppResponse.SuccessResult<AppUser>(null);
+            var successLoginResponse = AppResponse.SuccessResult<Account>(null);
             var accountServiceStub = new Mock<IAccountService>();
             accountServiceStub.Setup(a => a.LoginAsync(It.Is<AppRequest<LoginModel>>(req => req.Data == loginModel)))
                 .ReturnsAsync(successLoginResponse);
@@ -65,7 +65,7 @@ namespace Annstore.Web.Tests
         public async Task LoginPost_LoginFailed_RedirectView()
         {
             var loginModel = new LoginModel();
-            var failedLoginResponse = AppResponse.ErrorResult<AppUser>(string.Empty);
+            var failedLoginResponse = AppResponse.ErrorResult<Account>(string.Empty);
             var accountServiceMock = new Mock<IAccountService>();
             accountServiceMock.Setup(a => a.LoginAsync(It.Is<AppRequest<LoginModel>>(req => req.Data == loginModel)))
                 .ReturnsAsync(failedLoginResponse)

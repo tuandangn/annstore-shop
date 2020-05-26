@@ -35,7 +35,6 @@ namespace Annstore.Core.Common
             Items = source;
         }
 
-
         public int PageSize { get; }
 
         public int PageNumber { get; }

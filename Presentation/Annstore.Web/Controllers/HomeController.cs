@@ -2,7 +2,7 @@
 
 namespace Annstore.Web.Controllers
 {
-    public class HomeController : Controller
+    public sealed class HomeController : PublishControllerBase
     {
         public IActionResult Index()
         {

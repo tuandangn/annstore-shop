@@ -1,12 +1,12 @@
-﻿using Annstore.Web.Infrastructure;
-using Annstore.Web.Models.Accounts;
-using Annstore.Web.Services.Accounts;
+﻿using Annstore.Application.Infrastructure;
+using Annstore.Application.Models.Customers;
+using Annstore.Application.Services.Customers;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Annstore.Web.Controllers
 {
-    public sealed class AccountController : Controller
+    public sealed class AccountController : PublishControllerBase
     {
         private readonly IAccountService _accountService;
 

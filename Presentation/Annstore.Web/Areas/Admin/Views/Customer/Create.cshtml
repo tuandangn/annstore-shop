@@ -1,0 +1,24 @@
+﻿@model CustomerModel
+@{
+    ViewData["Title"] = "Thêm người dùng";
+}
+
+<div class="row">
+    <div class="col-12 mt-5">
+
+        <div class="row">
+            <div class="col-12">
+                <div class="float-right mt-2">
+                    <a asp-action="List" class="btn btn-light"><i class="fa fa-arrow-left"></i> Quay về</a>
+                </div>
+                <h1>Thêm người dùng</h1>
+            </div>
+        </div>
+
+        <partial name="_CreateOrUpdate" model="Model" />
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/pages/admin/customer-page.js"></script>
+}

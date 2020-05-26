@@ -1,4 +1,4 @@
-﻿using Annstore.Web.Areas.Admin.Models.Categories;
+﻿using Annstore.Application.Models.Admin.Categories;
 using FluentValidation;
 
 namespace Annstore.Web.Areas.Admin.Validators.Categories

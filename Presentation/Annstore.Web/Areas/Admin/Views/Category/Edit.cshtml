@@ -12,7 +12,7 @@
                         <input type="hidden" name="id" value="@Model.Id" />
                         <div class="btn-group" role="group" aria-label="actions">
                             <a asp-action="List" class="btn btn-light"><i class="fa fa-arrow-left"></i> Quay về</a>
-                            <button class="btn btn-light deleteBtn" type="submit">
+                            <button class="btn btn-light delete-category-btn" type="submit">
                                 <i class="fa fa-trash">&nbsp;</i>
                                 <span>Xóa</span>
                             </button>
@@ -27,7 +27,7 @@
     </div>
 </div>
 @section Scripts{
-    <script src="~/lib/tinymce/tinymce.min.js" defer></script>
-    <script src="~/lib/tinymce/jquery.tinymce.min.js" defer></script>
-    <script src="~/pages/admin/category-page.js" defer></script>
+    <script src="~/lib/tinymce/tinymce.min.js"></script>
+    <script src="~/lib/tinymce/jquery.tinymce.min.js"></script>
+    <script src="~/pages/admin/category-page.js"></script>
 }

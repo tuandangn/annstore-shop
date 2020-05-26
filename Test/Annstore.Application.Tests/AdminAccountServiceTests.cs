@@ -1,0 +1,565 @@
+﻿using Annstore.Application.Infrastructure;
+using Annstore.Application.Models.Admin.Accounts;
+using Annstore.Application.Models.Admin.Common;
+using Annstore.Application.Models.Admin.Customers;
+using Annstore.Application.Services.Customers;
+using Annstore.Auth.Entities;
+using Annstore.Core.Entities.Customers;
+using Annstore.Services.Customers;
+using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TestHelper;
+using Xunit;
+
+namespace Annstore.Application.Tests
+{
+    public class AdminAccountServiceTests
+    {
+        #region Helpers
+        private Mock<UserManager<Account>> GetDefaultUserManager()
+        {
+            var accountManagerStub = new Mock<UserManager<Account>>(Mock.Of<IUserStore<Account>>(), null, null, null, null, null, null, null, null);
+            return accountManagerStub;
+        }
+
+        #endregion
+
+        #region GetAccountListModelAsync
+        [Fact]
+        public async Task GetAccountListModelAsync_OptionPageNumberLessThanOne_ThrowArgumentException()
+        {
+            var pageNumber = 0;
+            var accountListOptions = new AccountListOptions { PageNumber = pageNumber };
+            var accountManagerStub = GetDefaultUserManager();
+            var adminAccountService = new AdminAccountService(accountManagerStub.Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentException>(() => adminAccountService.GetAccountListModelAsync(accountListOptions));
+        }
+
+        [Fact]
+        public async Task GetAccountListModelAsync_OptionPageSizeLessThanOrEqualZero_ThrowArgumentException()
+        {
+            var pageSize = 0;
+            var accountListOptions = new AccountListOptions { PageNumber = 1, PageSize = pageSize };
+            var accountManagerStub = GetDefaultUserManager();
+            var adminAccountService = new AdminAccountService(accountManagerStub.Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentException>(() => adminAccountService.GetAccountListModelAsync(accountListOptions));
+        }
+
+        [Fact]
+        public async Task GetAccountListModelAsync_ReturnAllMappedAccountSimpleModels()
+        {
+            var customer = new Customer { Id = 99, FullName = "customer" };
+            var testAccount = new Account { Id = 1, CustomerId = customer.Id };
+            var testModel = new AccountSimpleModel { Id = testAccount.Id };
+            var accounts = new List<Account> { testAccount };
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.Users)
+                .Returns(accounts.ToAsync())
+                .Verifiable();
+            var customerServiceMock = new Mock<ICustomerService>();
+            customerServiceMock.Setup(c => c.GetCustomerByIdAsync(customer.Id))
+                .ReturnsAsync(customer)
+                .Verifiable();
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map<AccountSimpleModel>(testAccount))
+                .Returns(testModel)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, customerServiceMock.Object, mapperMock.Object);
+            var accountListOptions = new AccountListOptions { PageNumber = 1, PageSize = int.MaxValue };
+
+            var accountListModel = await adminAccountService.GetAccountListModelAsync(accountListOptions);
+
+            Assert.Equal(accounts.Count, accountListModel.Accounts.Count);
+            Assert.Equal(testModel, accountListModel.Accounts[0]);
+            Assert.Equal(customer.FullName, accountListModel.Accounts[0].Customer);
+            accountManagerMock.Verify();
+            customerServiceMock.Verify();
+            mapperMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetAccountListModelAsync_CustomerIsNull_ThrowException()
+        {
+            var notFoundCustomerId = 0;
+            var testAccount = new Account { Id = 1, CustomerId = notFoundCustomerId};
+            var testModel = new AccountSimpleModel { Id = testAccount.Id };
+            var accounts = new List<Account> { testAccount };
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.Users)
+                .Returns(accounts.ToAsync())
+                .Verifiable();
+            var customerServiceMock = new Mock<ICustomerService>();
+            customerServiceMock.Setup(c => c.GetCustomerByIdAsync(notFoundCustomerId))
+                .ReturnsAsync((Customer) null)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, customerServiceMock.Object, Mock.Of<IMapper>());
+            var accountListOptions = new AccountListOptions { PageNumber = 1, PageSize = int.MaxValue };
+
+            await Assert.ThrowsAsync<Exception>(() => adminAccountService.GetAccountListModelAsync(accountListOptions));
+
+            accountManagerMock.Verify();
+            customerServiceMock.Verify();
+        }
+        
+        [Fact]
+        public async Task GetAccountListModelAsync_CustomerIsDeleted_ThrowException()
+        {
+            var deletedCustomerId = 0;
+            var deletedCustomer = new Customer { Id = deletedCustomerId, Deleted = true };
+            var testAccount = new Account { Id = 1, CustomerId = deletedCustomerId};
+            var testModel = new AccountSimpleModel { Id = testAccount.Id };
+            var accounts = new List<Account> { testAccount };
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.Users)
+                .Returns(accounts.ToAsync())
+                .Verifiable();
+            var customerServiceMock = new Mock<ICustomerService>();
+            customerServiceMock.Setup(c => c.GetCustomerByIdAsync(deletedCustomerId))
+                .ReturnsAsync(deletedCustomer)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, customerServiceMock.Object, Mock.Of<IMapper>());
+            var accountListOptions = new AccountListOptions { PageNumber = 1, PageSize = int.MaxValue };
+
+            await Assert.ThrowsAsync<Exception>(() => adminAccountService.GetAccountListModelAsync(accountListOptions));
+
+            accountManagerMock.Verify();
+            customerServiceMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetAccountListModelAsync_Pagination_PagedAccountSimpleModels()
+        {
+            var pageNumber = 2;
+            var pageSize = 3;
+            var testAccount = new Account { Id = 4, CustomerId = 88 };
+            var customer = new Customer { Id = testAccount.CustomerId, FullName = "customer" };
+            var testModel = new AccountSimpleModel { Id = testAccount.Id };
+            var accounts = new List<Account> {
+                new Account{Id = 1},new Account{Id = 2},new Account{Id = 3},
+                testAccount
+            };
+            var accountListOptions = new AccountListOptions { PageNumber = pageNumber, PageSize = pageSize };
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.Users)
+                .Returns(accounts.ToAsync())
+                .Verifiable();
+            var customerServiceStub = new Mock<ICustomerService>();
+            customerServiceStub.Setup(c => c.GetCustomerByIdAsync(customer.Id))
+                .ReturnsAsync(customer)
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map<AccountSimpleModel>(testAccount))
+                .Returns(testModel);
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, customerServiceStub.Object, mapperStub.Object);
+
+            var accountListModel = await adminAccountService.GetAccountListModelAsync(accountListOptions);
+
+            Assert.Equal(2, accountListModel.TotalPages);
+            Assert.Equal(1, accountListModel.Accounts.Count);
+            Assert.Equal(testAccount.Id, accountListModel.Accounts.ElementAt(0).Id);
+            accountManagerMock.Verify();
+        }
+
+        #endregion
+
+        #region CreateAccountAsync
+        [Fact]
+        public async Task CreateAccountAsync_RequestIsNull_ThrowArgumentNullException()
+        {
+            var adminAccountService = new AdminAccountService(GetDefaultUserManager().Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => adminAccountService.CreateAccountAsync(null));
+        }
+
+        [Fact]
+        public async Task CreateAccountAsync_CreateAccountSuccessAndAddPasswordForAccountSuccess_SuccessResponse()
+        {
+            var password = "password";
+            var model = new AccountModel { Id = 1, Password = password };
+            var account = new Account { Id = 1 };
+            var createSuccessResult = IdentityResult.Success;
+            var addPasswordSuccessResult = IdentityResult.Success;
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.CreateAsync(account))
+                .ReturnsAsync(createSuccessResult)
+                .Verifiable();
+            accountManagerMock.Setup(u => u.AddPasswordAsync(account, password))
+                .ReturnsAsync(addPasswordSuccessResult)
+                .Verifiable();
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map<Account>(model))
+                .Returns(account)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), mapperMock.Object);
+            var request = new AppRequest<AccountModel>(model);
+
+            var successResult = await adminAccountService.CreateAccountAsync(request);
+
+            Assert.True(successResult.Success);
+            accountManagerMock.Verify();
+            mapperMock.Verify();
+        }
+
+        [Fact]
+        public async Task CreateAccountAsync_AddPasswordForAccountFailed_ErrorResponse()
+        {
+            var password = "invalid password";
+            var model = new AccountModel { Id = 1, Password = password };
+            var account = new Account { Id = 1 };
+            var createSuccessResult = IdentityResult.Success;
+            var addPasswordFailedResult = IdentityResult.Failed();
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.CreateAsync(account))
+                .ReturnsAsync(createSuccessResult)
+                .Verifiable();
+            accountManagerMock.Setup(u => u.AddPasswordAsync(account, password))
+                .ReturnsAsync(addPasswordFailedResult)
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map<Account>(model))
+                .Returns(account);
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), mapperStub.Object);
+            var request = new AppRequest<AccountModel>(model);
+
+            var successResult = await adminAccountService.CreateAccountAsync(request);
+
+            Assert.False(successResult.Success);
+            accountManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task CreateAccountAsync_CreateAccountError_ReturnErrorResponse()
+        {
+            var model = new AccountModel { Id = 1 };
+            var account = new Account { Id = 1 };
+            var createErrorResult = IdentityResult.Failed();
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.CreateAsync(account))
+                .ReturnsAsync(createErrorResult)
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map<Account>(model))
+                .Returns(account);
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), mapperStub.Object);
+            var request = new AppRequest<AccountModel>(model);
+
+            var errorResult = await adminAccountService.CreateAccountAsync(request);
+
+            Assert.False(errorResult.Success);
+            accountManagerMock.Verify();
+        }
+
+        #endregion
+
+        #region DeleteAccountAsync
+        [Fact]
+        public async Task DeleteAccountAsync_RequestIsNull_ThrowArgumentNullException()
+        {
+            var adminAccountService = new AdminAccountService(GetDefaultUserManager().Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => adminAccountService.DeleteAccountAsync(null));
+        }
+
+        [Fact]
+        public async Task DeleteAccountAsync_AccountIsNotFound_ModelInvalidResponse()
+        {
+            var notFoundAccountId = 0;
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.FindByIdAsync(notFoundAccountId.ToString()))
+                .ReturnsAsync((Account)null)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+            var deleteAccountRequest = new AppRequest<int>(notFoundAccountId);
+
+            var response = await adminAccountService.DeleteAccountAsync(deleteAccountRequest);
+
+            Assert.False(response.Success);
+            accountManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task DeleteAccountAsync_DeleteAccountError_ErrorResponse()
+        {
+            var accountId = 1;
+            var account = new Account { Id = accountId };
+            var accountManagerMock = GetDefaultUserManager();
+            var deleteAccountErrorResult = IdentityResult.Failed();
+            accountManagerMock.Setup(u => u.FindByIdAsync(accountId.ToString()))
+                .ReturnsAsync(account);
+            accountManagerMock.Setup(u => u.DeleteAsync(account))
+                .ReturnsAsync(deleteAccountErrorResult)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+            var deleteAccountRequest = new AppRequest<int>(accountId);
+
+            var response = await adminAccountService.DeleteAccountAsync(deleteAccountRequest);
+
+            Assert.False(response.Success);
+            accountManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task DeleteAccountAsync_DeleteAccountSuccess_SuccessResponse()
+        {
+            var accountId = 1;
+            var account = new Account { Id = accountId };
+            var accountManagerMock = GetDefaultUserManager();
+            var deleteAccountSuccessResult = IdentityResult.Success;
+            accountManagerMock.Setup(u => u.FindByIdAsync(accountId.ToString()))
+                .ReturnsAsync(account);
+            accountManagerMock.Setup(u => u.DeleteAsync(account))
+                .ReturnsAsync(deleteAccountSuccessResult)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+            var deleteAccountRequest = new AppRequest<int>(accountId);
+
+            var response = await adminAccountService.DeleteAccountAsync(deleteAccountRequest);
+
+            Assert.True(response.Success);
+            accountManagerMock.Verify();
+        }
+
+        #endregion
+
+        #region GetAccountModelAsync
+        [Fact]
+        public async Task GetAccountModelAsync_AccountIsNotFound_ReturnNull()
+        {
+            var notFoundAccountId = 0;
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.FindByIdAsync(notFoundAccountId.ToString()))
+                .ReturnsAsync((Account)null)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+
+            var result = await adminAccountService.GetAccountModelAsync(notFoundAccountId);
+
+            Assert.Null(result);
+            accountManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetAccountModelAsync_AccountIsFound_ReturnMappedModel()
+        {
+            var accountId = 1;
+            var account = new Account { Id = accountId };
+            var accountModel = new AccountModel { Id = accountId };
+            var allCustomers = new List<Customer> { new Customer { Id = 1 }, new Customer { Id = 2 } };
+            var mappedCustomers = new List<CustomerSimpleModel> { new CustomerSimpleModel { Id = 1 }, new CustomerSimpleModel { Id = 2 } };
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.FindByIdAsync(accountId.ToString()))
+                .ReturnsAsync(account);
+            var customerServiceMock = new Mock<ICustomerService>();
+            customerServiceMock.Setup(c => c.GetCustomersAsync())
+                .ReturnsAsync(allCustomers)
+                .Verifiable();
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map<AccountModel>(account))
+                .Returns(accountModel)
+                .Verifiable();
+            mapperMock.Setup(m => m.Map<CustomerSimpleModel>(allCustomers[0]))
+                .Returns(mappedCustomers[0])
+                .Verifiable();
+            mapperMock.Setup(m => m.Map<CustomerSimpleModel>(allCustomers[1]))
+                .Returns(mappedCustomers[1])
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, customerServiceMock.Object, mapperMock.Object);
+
+            var result = await adminAccountService.GetAccountModelAsync(accountId);
+
+            Assert.Equal(accountModel, result);
+            Assert.Equal(allCustomers.Count, result.Customers.Count);
+            Assert.Equal(allCustomers[0].Id, result.Customers[0].Id);
+            Assert.Equal(allCustomers[1].Id, result.Customers[1].Id);
+            mapperMock.Verify();
+        }
+
+        #endregion
+
+        #region UpdateAccountAsync
+        [Fact]
+        public async Task UpdateAccountAsync_RequestIsNull_ThrowArgumentNullException()
+        {
+            var adminAccountService = new AdminAccountService(GetDefaultUserManager().Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => adminAccountService.UpdateAccountAsync(null));
+        }
+
+        [Fact]
+        public async Task UpdateAccountAsync_AccountIsNotFound_ModelInvalidResponse()
+        {
+            var notFoundAccountId = 0;
+            var accountModel = new AccountModel { Id = notFoundAccountId };
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(u => u.FindByIdAsync(notFoundAccountId.ToString()))
+                .ReturnsAsync((Account)null)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+            var updateAccountRequest = new AppRequest<AccountModel>(accountModel);
+
+            var response = await adminAccountService.UpdateAccountAsync(updateAccountRequest);
+
+            Assert.False(response.Success);
+            Assert.True(response.ModelIsInvalid);
+            accountManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task UpdateAccountAsync_UpdateAccountSuccess_SuccessResponse()
+        {
+            var accountId = 1;
+            var account = new Account { Id = accountId };
+            var accountModel = new AccountModel { Id = accountId };
+            var mappedAccount = new Account { Id = accountId };
+            var updateAccountResult = IdentityResult.Success;
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(m => m.FindByIdAsync(accountId.ToString()))
+                .ReturnsAsync(account);
+            accountManagerMock.Setup(m => m.UpdateAsync(mappedAccount))
+                .ReturnsAsync(updateAccountResult)
+                .Verifiable();
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map(accountModel, account))
+                .Returns(mappedAccount)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), mapperMock.Object);
+            var updateAccountRequest = new AppRequest<AccountModel>(accountModel);
+
+            var response = await adminAccountService.UpdateAccountAsync(updateAccountRequest);
+
+            Assert.True(response.Success);
+            accountManagerMock.Verify();
+            mapperMock.Verify();
+        }
+
+        [Fact]
+        public async Task UpdateAccountAsync_RemovePasswordError_ErrorResponse()
+        {
+            var accountId = 1;
+            var account = new Account { Id = accountId };
+            var accountModel = new AccountModel { Id = accountId, Password = "change password" };
+            var mappedAccount = new Account { Id = accountId };
+            var updateAccountResult = IdentityResult.Success;
+            var removePasswordResult = IdentityResult.Failed();
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(m => m.FindByIdAsync(accountId.ToString()))
+                .ReturnsAsync(account);
+            accountManagerMock.Setup(m => m.UpdateAsync(mappedAccount))
+                .ReturnsAsync(updateAccountResult);
+            accountManagerMock.Setup(m => m.RemovePasswordAsync(mappedAccount))
+                .ReturnsAsync(removePasswordResult)
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map(accountModel, account))
+                .Returns(mappedAccount)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), mapperStub.Object);
+            var updateAccountRequest = new AppRequest<AccountModel>(accountModel);
+
+            var response = await adminAccountService.UpdateAccountAsync(updateAccountRequest);
+
+            Assert.False(response.Success);
+            accountManagerMock.Verify();
+        }
+
+        [Fact]
+        public async Task UpdateAccountAsync_AddPasswordError_ErrorResponse()
+        {
+            var accountId = 1;
+            var account = new Account { Id = accountId };
+            var accountModel = new AccountModel { Id = accountId, Password = "change password" };
+            var mappedAccount = new Account { Id = accountId };
+            var updateAccountResult = IdentityResult.Success;
+            var removePasswordResult = IdentityResult.Success;
+            var addPasswordResult = IdentityResult.Failed();
+            var accountManagerMock = GetDefaultUserManager();
+            accountManagerMock.Setup(m => m.FindByIdAsync(accountId.ToString()))
+                .ReturnsAsync(account);
+            accountManagerMock.Setup(m => m.UpdateAsync(mappedAccount))
+                .ReturnsAsync(updateAccountResult);
+            accountManagerMock.Setup(m => m.RemovePasswordAsync(mappedAccount))
+                .ReturnsAsync(removePasswordResult);
+            accountManagerMock.Setup(m => m.AddPasswordAsync(mappedAccount, accountModel.Password))
+                .ReturnsAsync(addPasswordResult)
+                .Verifiable();
+            var mapperStub = new Mock<IMapper>();
+            mapperStub.Setup(m => m.Map(accountModel, account))
+                .Returns(mappedAccount)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(accountManagerMock.Object, Mock.Of<ICustomerService>(), mapperStub.Object);
+            var updateAccountRequest = new AppRequest<AccountModel>(accountModel);
+
+            var response = await adminAccountService.UpdateAccountAsync(updateAccountRequest);
+
+            Assert.False(response.Success);
+            accountManagerMock.Verify();
+        }
+
+        #endregion
+
+        #region PrepareCustomersForAccountAsync
+        [Fact]
+        public async Task PrepareCustomersForAccountAsync_ModelIsNull_ThrowArgumentNullException()
+        {
+            var adminAccountService = new AdminAccountService(GetDefaultUserManager().Object, Mock.Of<ICustomerService>(), Mock.Of<IMapper>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => adminAccountService.PrepareCustomersForAccountAsync(null));
+        }
+
+        [Fact]
+        public async Task PrepareCustomersForAccountAsync_ModelIsNotNull_IncludeMappedAllCustomers()
+        {
+            var model = new AccountModel();
+            var availableCustomers = new List<Customer> { new Customer { Id = 1 }, new Customer { Id = 2 } };
+            var mappedCustomers = new List<CustomerSimpleModel> { new CustomerSimpleModel { Id = 1 }, new CustomerSimpleModel { Id = 2 } };
+            var customerServiceMock = new Mock<ICustomerService>();
+            customerServiceMock.Setup(c => c.GetCustomersAsync())
+                .ReturnsAsync(availableCustomers)
+                .Verifiable();
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map<CustomerSimpleModel>(availableCustomers[0]))
+                .Returns(mappedCustomers[0])
+                .Verifiable();
+            mapperMock.Setup(m => m.Map<CustomerSimpleModel>(availableCustomers[1]))
+                .Returns(mappedCustomers[1])
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(GetDefaultUserManager().Object, customerServiceMock.Object, mapperMock.Object);
+
+            var result = await adminAccountService.PrepareCustomersForAccountAsync(model);
+
+            Assert.Equal(availableCustomers.Count, result.Customers.Count);
+            Assert.Equal(availableCustomers[0].Id, result.Customers[0].Id);
+            Assert.Equal(availableCustomers[1].Id, result.Customers[1].Id);
+            customerServiceMock.Verify();
+            mapperMock.Verify();
+        }
+
+        #endregion
+
+        #region HasCustomersAsync
+        [Fact]
+        public async Task HasCustomersAsync()
+        {
+            var availableCustomers = new List<Customer> { new Customer { Id = 1 } };
+            var customerServiceMock = new Mock<ICustomerService>();
+            customerServiceMock.Setup(c => c.HasCustomersAsync())
+                .ReturnsAsync(availableCustomers.Count > 0)
+                .Verifiable();
+            var adminAccountService = new AdminAccountService(GetDefaultUserManager().Object, customerServiceMock.Object, Mock.Of<IMapper>());
+
+            var result = await adminAccountService.HasCustomersAsync();
+
+            Assert.Equal(availableCustomers.Count > 0, result);
+            customerServiceMock.Verify();
+        }
+
+        #endregion
+    }
+}

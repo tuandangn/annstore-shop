@@ -25,14 +25,16 @@ namespace Annstore.Services.Catalog
                         orderby category.Id descending
                         select category;
 
-            var result = await query.ToListAsync().ConfigureAwait(false);
+            var result = await query.ToListAsync()
+                .ConfigureAwait(false);
 
             return result;
         }
 
         public async Task<Category> GetCategoryByIdAsync(int id)
         {
-            var category = await _categoryRepository.FindByIdAsync(id).ConfigureAwait(false);
+            var category = await _categoryRepository.FindByIdAsync(id)
+                .ConfigureAwait(false);
 
             return category;
         }
@@ -42,7 +44,8 @@ namespace Annstore.Services.Catalog
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
 
-            var result = await _categoryRepository.UpdateAsync(category).ConfigureAwait(false);
+            var result = await _categoryRepository.UpdateAsync(category)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -52,7 +55,8 @@ namespace Annstore.Services.Catalog
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
 
-            var result = await _categoryRepository.InsertAsync(category).ConfigureAwait(false);
+            var result = await _categoryRepository.InsertAsync(category)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -63,7 +67,8 @@ namespace Annstore.Services.Catalog
                 throw new ArgumentNullException(nameof(category));
 
             category.Deleted = true;
-            await _categoryRepository.UpdateAsync(category).ConfigureAwait(false);
+            await _categoryRepository.UpdateAsync(category)
+                .ConfigureAwait(false);
         }
 
         public async Task<List<Category>> GetCategoryBreadcrumbAsync(Category category, int deepLevel, bool showHidden = false)
@@ -77,7 +82,8 @@ namespace Annstore.Services.Catalog
             if (deepLevel == 0 || category.ParentId == 0)
                 return breadcrumb;
 
-            await _GetCategoryBreadcrum(breadcrumb, category, 0, deepLevel, showHidden);
+            await _GetCategoryBreadcrum(breadcrumb, category, 0, deepLevel, showHidden)
+                .ConfigureAwait(false);
             breadcrumb.Reverse();
             return breadcrumb;
         }
@@ -87,19 +93,20 @@ namespace Annstore.Services.Catalog
             if (category.ParentId == 0 || currentLevel == maxLevel)
                 return breadcrumb;
 
-            var parentCategory = await _categoryRepository.FindByIdAsync(category.ParentId);
+            var parentCategory = await _categoryRepository.FindByIdAsync(category.ParentId).ConfigureAwait(false);
             if (parentCategory == null || parentCategory.Deleted || (!showHidden && !parentCategory.Published))
                 return breadcrumb;
             breadcrumb.Add(parentCategory);
-            await _GetCategoryBreadcrum(breadcrumb, parentCategory, currentLevel + 1, maxLevel, showHidden);
+            await _GetCategoryBreadcrum(breadcrumb, parentCategory, currentLevel + 1, maxLevel, showHidden)
+                .ConfigureAwait(false);
             return breadcrumb;
         }
 
         public async Task<IPagedList<Category>> GetPagedCategoriesAsync(int pageNumber, int pageSize, bool showHidden = false)
         {
-            if(pageNumber < 1)
+            if (pageNumber < 1)
                 throw new ArgumentException("Page number must greater than or equal 1");
-            if(pageSize <= 0)
+            if (pageSize <= 0)
                 throw new ArgumentException("Page size must greater than 0");
 
             var query = from category in _categoryRepository.Table
@@ -107,7 +114,8 @@ namespace Annstore.Services.Catalog
                         orderby category.Id descending
                         select category;
             //*TODO*
-            var allCategories = await query.ToListAsync();
+            var allCategories = await query.ToListAsync()
+                .ConfigureAwait(false);
             var categories = allCategories.Skip((pageNumber - 1) * pageSize).Take(pageSize);
             var result = categories.ToPagedList(pageSize, pageNumber, allCategories.Count);
 

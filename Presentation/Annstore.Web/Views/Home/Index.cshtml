@@ -1,14 +1,5 @@
 ﻿@{
     ViewData["Title"] = "Trang chủ";
 }
-@inject Microsoft.AspNetCore.Identity.SignInManager<Annstore.Core.Entities.Users.AppUser> SignInManager
 
 <h1 class="display-1">Anstore Shop</h1>
-
-@if (!SignInManager.IsSignedIn(User))
-{
-    <div class="m-4">
-        <a class="btn btn-primary" asp-action="Login" asp-controller="Account">Login</a>
-    </div>
-}
-

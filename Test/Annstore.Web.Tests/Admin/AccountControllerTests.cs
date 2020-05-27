@@ -273,7 +273,7 @@ namespace Annstore.Web.Tests.Admin
         }
 
         [Fact]
-        public async Task Edit_AccountModelIsNull_RedirectToList()
+        public async Task Edit_ModelIsNullAccountModel_RedirectToList()
         {
             var hasCustomers = true;
             var accountId = 0;
@@ -281,7 +281,7 @@ namespace Annstore.Web.Tests.Admin
             adminAccountServiceMock.Setup(a => a.HasCustomersAsync())
                 .ReturnsAsync(hasCustomers);
             adminAccountServiceMock.Setup(a => a.GetAccountModelAsync(accountId))
-                .ReturnsAsync((AccountModel)null)
+                .ReturnsAsync(AccountModel.NullModel)
                 .Verifiable();
             var accountController = new AccountController(adminAccountServiceMock.Object, GetDefaultAccountOptions());
 

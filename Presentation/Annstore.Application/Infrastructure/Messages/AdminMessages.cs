@@ -23,7 +23,7 @@
         {
             public const string AccountIsNotFound = "Không tìm thấy tài khoản";
 
-            public const string AccountIsEmpty = "Không có tài khoản nào";
+            public const string CustomerIsEmpty = "Không có người dùng nào";
 
             public const string CreateAccountError = "Thêm tài khoản mới thất bại";
 

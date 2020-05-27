@@ -71,7 +71,7 @@ namespace Annstore.Application.Services.Categories
             var category = await _categoryService.GetCategoryByIdAsync(id)
                 .ConfigureAwait(false);
             if (category == null || category.Deleted)
-                return null;
+                return CategoryModel.NullModel;
 
             var model = _mapper.Map<CategoryModel>(category);
             await PrepareCategoryModelParentCategoriesAsync(model, breadcrumbOpts, true)

@@ -43,7 +43,7 @@ namespace Annstore.Web.Areas.Admin.Controllers
             var categorySettings = _categorySettingsSnapshot.Value;
             var breadcrumbOptions = _GetBreadcrumbOptions(categorySettings.Admin.Breadcrumb);
             var model = await _adminCategoryService.GetCategoryModelAsync(id, breadcrumbOptions);
-            if (model == null)
+            if (model is NullCategoryModel)
                 return RedirectToAction(nameof(List));
 
             return View(model);

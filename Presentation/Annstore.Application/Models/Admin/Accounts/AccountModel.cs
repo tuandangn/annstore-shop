@@ -1,11 +1,12 @@
-﻿using Annstore.Application.Models.Admin.Customers;
+﻿using Annstore.Application.Models.Admin.Common;
+using Annstore.Application.Models.Admin.Customers;
 using System;
 using System.Collections.Generic;
 
 namespace Annstore.Application.Models.Admin.Accounts
 {
     [Serializable]
-    public sealed class AccountModel
+    public class AccountModel : NullableModel<NullAccountModel>
     {
         public AccountModel()
         {

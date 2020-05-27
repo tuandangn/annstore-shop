@@ -3,23 +3,30 @@ using Annstore.Application.Infrastructure.Messages.Messages;
 using Annstore.Application.Models.Admin.Common;
 using Annstore.Application.Models.Admin.Customers;
 using Annstore.Application.Services.Customers;
+using Annstore.Auth.Entities;
 using Annstore.Core.Entities.Customers;
 using Annstore.Services.Customers;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Annstore.Application.Services.Categories
 {
     public sealed class AdminCustomerService : IAdminCustomerService
     {
+
+        private readonly UserManager<Account> _userManager;
         private readonly ICustomerService _customerService;
         private readonly IMapper _mapper;
 
-        public AdminCustomerService(ICustomerService customerService, IMapper mapper)
+        public AdminCustomerService(ICustomerService customerService, UserManager<Account> userManager, IMapper mapper)
         {
             _customerService = customerService;
+            _userManager = userManager;
             _mapper = mapper;
         }
 
@@ -53,7 +60,7 @@ namespace Annstore.Application.Services.Categories
             var customer = await _customerService.GetCustomerByIdAsync(id)
                 .ConfigureAwait(false);
             if (customer == null || customer.Deleted)
-                return null;
+                return CustomerModel.NullModel;
 
             var model = _mapper.Map<CustomerModel>(customer);
 
@@ -115,7 +122,19 @@ namespace Annstore.Application.Services.Categories
             {
                 if (!customer.Deleted)
                 {
-                    await _customerService.DeleteCustomerAsync(customer).ConfigureAwait(false);
+                    await _customerService.DeleteCustomerAsync(customer)
+                        .ConfigureAwait(false);
+
+                    //*TODO*
+                    var accountQuery = from account in _userManager.Users
+                                       where account.CustomerId == customer.Id
+                                       select account;
+                    var accounts = await accountQuery.ToListAsync()
+                        .ConfigureAwait(false);
+                    foreach(var account in accounts)
+                    {
+                        await _userManager.DeleteAsync(account);
+                    }
                 }
 
                 return AppResponse.SuccessResult(AdminMessages.Customer.DeleteCustomerSuccess);

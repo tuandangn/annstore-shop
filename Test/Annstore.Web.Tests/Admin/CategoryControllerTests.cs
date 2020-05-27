@@ -80,12 +80,12 @@ namespace Annstore.Web.Tests.Admin
         #region Edit
 
         [Fact]
-        public async Task Edit_ModelIsNull_RedirectToList()
+        public async Task Edit_ModelIsNullCategoryModel_RedirectToList()
         {
             var notFoundCategoryId = 0;
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
             adminCategoryServiceMock.Setup(s => s.GetCategoryModelAsync(notFoundCategoryId, It.IsAny<BreadcrumbOptions>()))
-                .ReturnsAsync((CategoryModel)null)
+                .ReturnsAsync(CategoryModel.NullModel)
                 .Verifiable();
             var categoryController = new CategoryController(adminCategoryServiceMock.Object, _GetDefaultCategorySettingsSnapshot());
 

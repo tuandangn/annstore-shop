@@ -18,6 +18,7 @@ using Annstore.Application.Services.Customers;
 using Annstore.Application.Mappings;
 using Annstore.Services.Customers;
 using Annstore.Application.Infrastructure.Settings;
+using Annstore.Auth.Services;
 
 namespace Annstore.Web
 {
@@ -53,6 +54,7 @@ namespace Annstore.Web
             services.AddTransient<IAdminCategoryService, AdminCategoryService>();
             services.AddTransient<IAdminCustomerService, AdminCustomerService>();
             services.AddTransient<IAdminAccountService, AdminAccountService>();
+            services.AddTransient<IPublicAccountService, PublicAccountService>();
             services.AddTransient<IAccountService, AccountService>();
 
             //auto mapper
@@ -106,7 +108,7 @@ namespace Annstore.Web
                 options.Cookie.HttpOnly = true;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 
-                options.LoginPath = "/Account/Login";
+                options.LoginPath = "/Account/SignIn";
                 options.AccessDeniedPath = "/Account/AccessDenied";
                 options.SlidingExpiration = true;
             });

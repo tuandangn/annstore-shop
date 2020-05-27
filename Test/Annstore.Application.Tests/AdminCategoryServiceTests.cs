@@ -160,7 +160,7 @@ namespace Annstore.Application.Tests
 
         #region GetCategoryModelAsync
         [Fact]
-        public async Task GetCategoryModelAsync_CategoryNotFound_ReturnNull()
+        public async Task GetCategoryModelAsync_CategoryNotFound_ReturnNullCategoryModel()
         {
             var notFoundCategoryId = 0;
             var categoryServiceMock = new Mock<ICategoryService>();
@@ -169,14 +169,14 @@ namespace Annstore.Application.Tests
                 .Verifiable();
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
 
-            var nullModel = await adminCategoryService.GetCategoryModelAsync(notFoundCategoryId, new BreadcrumbOptions());
+            var nullCategoryModel  = await adminCategoryService.GetCategoryModelAsync(notFoundCategoryId, new BreadcrumbOptions());
 
-            Assert.Null(nullModel);
+            Assert.IsType<NullCategoryModel>(nullCategoryModel);
             categoryServiceMock.Verify();
         }
 
         [Fact]
-        public async Task GetCategoryModelAsync_CategoryDeleted_ReturnNull()
+        public async Task GetCategoryModelAsync_CategoryDeleted_ReturnNullCategoryModel()
         {
             var deletedCategoryId = 1;
             var deletedCategory = new Category { Id = deletedCategoryId, Deleted = true };
@@ -186,9 +186,9 @@ namespace Annstore.Application.Tests
                 .Verifiable();
             var adminCategoryService = new AdminCategoryService(categoryServiceMock.Object, Mock.Of<IMapper>());
 
-            var nullModel = await adminCategoryService.GetCategoryModelAsync(deletedCategoryId, new BreadcrumbOptions());
+            var nullCategoryModel = await adminCategoryService.GetCategoryModelAsync(deletedCategoryId, new BreadcrumbOptions());
 
-            Assert.Null(nullModel);
+            Assert.IsType<NullCategoryModel>(nullCategoryModel);
             categoryServiceMock.Verify();
         }
 

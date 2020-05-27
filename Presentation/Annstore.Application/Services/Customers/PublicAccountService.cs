@@ -5,16 +5,16 @@ using Annstore.Application.Infrastructure;
 using Annstore.Application.Models.Customers;
 using Annstore.Auth.Entities;
 using Annstore.Application.Infrastructure.Messages;
+using System.Security.Claims;
 
 namespace Annstore.Application.Services.Customers
 {
-    [Serializable]
-    public sealed class AccountService : IAccountService
+    public sealed class PublicAccountService : IPublicAccountService
     {
         private readonly SignInManager<Account> _signInManager;
         private readonly UserManager<Account> _userManager;
 
-        public AccountService(UserManager<Account> userManager, SignInManager<Account> signInManager)
+        public PublicAccountService(UserManager<Account> userManager, SignInManager<Account> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -37,6 +37,15 @@ namespace Annstore.Application.Services.Customers
             if (signInResult.Succeeded)
                 return AppResponse.SuccessResult(user);
             return AppResponse.ErrorResult<Account>(PublicMessages.User.SignInFailed);
+        }
+
+        public async Task LogoutAsync(ClaimsPrincipal principal)
+        {
+            if (_signInManager.IsSignedIn(principal))
+            {
+                await _signInManager.SignOutAsync()
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

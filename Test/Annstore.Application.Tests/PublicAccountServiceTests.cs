@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Annstore.Application.Tests
 {
-    public class AccountServiceTests
+    public class PublicAccountServiceTests
     {
         #region Helpers
         private Mock<UserManager<Account>> GetDefaultUserManager()
@@ -34,7 +35,7 @@ namespace Annstore.Application.Tests
         {
             var userManagerStub = GetDefaultUserManager();
             var signInManagerStub = GetDefaultSignInManager(userManagerStub.Object);
-            var accountService = new AccountService(userManagerStub.Object, signInManagerStub.Object);
+            var accountService = new PublicAccountService(userManagerStub.Object, signInManagerStub.Object);
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => accountService.LoginAsync(null));
         }
@@ -52,7 +53,7 @@ namespace Annstore.Application.Tests
                 .ReturnsAsync((Account)null)
                 .Verifiable();
             var signInManagerStub = GetDefaultSignInManager(userManagerMock.Object);
-            var accountService = new AccountService(userManagerMock.Object, signInManagerStub.Object);
+            var accountService = new PublicAccountService(userManagerMock.Object, signInManagerStub.Object);
             var request = new AppRequest<LoginModel>(model);
 
             var response = await accountService.LoginAsync(request);
@@ -76,7 +77,7 @@ namespace Annstore.Application.Tests
                 .ReturnsAsync(false)
                 .Verifiable();
             var signInManagerStub = GetDefaultSignInManager(userManagerMock.Object);
-            var accountService = new AccountService(userManagerMock.Object, signInManagerStub.Object);
+            var accountService = new PublicAccountService(userManagerMock.Object, signInManagerStub.Object);
             var request = new AppRequest<LoginModel>(model);
 
             var response = await accountService.LoginAsync(request);
@@ -103,7 +104,7 @@ namespace Annstore.Application.Tests
             signInManagerMock.Setup(s => s.PasswordSignInAsync(account, password, model.Remember, false))
                 .ReturnsAsync(successSignInResult)
                 .Verifiable();
-            var accountService = new AccountService(userManagerStub.Object, signInManagerMock.Object);
+            var accountService = new PublicAccountService(userManagerStub.Object, signInManagerMock.Object);
             var request = new AppRequest<LoginModel>(model);
 
             var response = await accountService.LoginAsync(request);
@@ -130,7 +131,7 @@ namespace Annstore.Application.Tests
             signInManagerMock.Setup(s => s.PasswordSignInAsync(account, password, model.Remember, false))
                 .ReturnsAsync(failedSignInResult)
                 .Verifiable();
-            var accountService = new AccountService(userManagerStub.Object, signInManagerMock.Object);
+            var accountService = new PublicAccountService(userManagerStub.Object, signInManagerMock.Object);
             var request = new AppRequest<LoginModel>(model);
 
             var response = await accountService.LoginAsync(request);
@@ -138,6 +139,26 @@ namespace Annstore.Application.Tests
             Assert.False(response.Success);
             Assert.NotNull(response.Message);
             signInManagerMock.Verify();
+        }
+
+        #endregion
+
+        #region LogoutAsync
+        [Fact]
+        public async Task LogoutAsync_IsSignedInIsFalse_SkipProcess()
+        {
+            var isSignedIn = false;
+            var principal = new ClaimsPrincipal();
+            var userManagerStub = GetDefaultUserManager();
+            var signInManagerMock = GetDefaultSignInManager(userManagerStub.Object);
+            signInManagerMock.Setup(s => s.IsSignedIn(principal))
+                .Returns(isSignedIn);
+            var publicAccountService = new PublicAccountService(userManagerStub.Object, signInManagerMock.Object);
+
+            await publicAccountService.LogoutAsync(principal);
+
+            signInManagerMock.Verify(s => s.IsSignedIn(principal), Times.Once);
+            signInManagerMock.Verify(s => s.SignOutAsync(), Times.Never);
         }
 
         #endregion

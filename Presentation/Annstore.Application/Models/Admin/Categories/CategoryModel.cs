@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Annstore.Application.Models.Admin.Common;
+using System;
 using System.Collections.Generic;
 
 namespace Annstore.Application.Models.Admin.Categories
 {
     [Serializable]
-    public sealed class CategoryModel
+    public class CategoryModel : NullableModel<NullCategoryModel>
     {
         public CategoryModel()
         {

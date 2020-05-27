@@ -80,12 +80,12 @@ namespace Annstore.Web.Tests.Admin.Controllers
         #region Edit
 
         [Fact]
-        public async Task Edit_ModelIsNull_RedirectToList()
+        public async Task Edit_ModelIsNullCustomerModel_RedirectToList()
         {
             var notFoundCustomerId = 0;
             var adminCustomerServiceMock = new Mock<IAdminCustomerService>();
             adminCustomerServiceMock.Setup(s => s.GetCustomerModelAsync(notFoundCustomerId))
-                .ReturnsAsync((CustomerModel)null)
+                .ReturnsAsync(CustomerModel.NullModel)
                 .Verifiable();
             var customerController = new CustomerController(adminCustomerServiceMock.Object, _GetDefaultCustomerSettingsSnapshot());
 

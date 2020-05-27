@@ -2,20 +2,21 @@
 using Annstore.Application.Models.Customers;
 using Annstore.Application.Services.Customers;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace Annstore.Web.Controllers
 {
     public sealed class AccountController : PublishControllerBase
     {
-        private readonly IAccountService _accountService;
+        private readonly IPublicAccountService _accountService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IPublicAccountService accountService)
         {
             _accountService = accountService;
         }
 
-        public IActionResult Login(string returnUrl)
+        public IActionResult SignIn(string returnUrl)
         {
             var model = new LoginModel();
 
@@ -25,7 +26,7 @@ namespace Annstore.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginModel model, string returnUrl)
+        public async Task<IActionResult> SignIn(LoginModel model, string returnUrl)
         {
             if (ModelState.IsValid)
             {
@@ -43,6 +44,15 @@ namespace Annstore.Web.Controllers
             }
             ViewBag.ReturnUrl = returnUrl;
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignOut()
+        {
+            await _accountService.LogoutAsync(User);
+
+            return RedirectToAction(nameof(HomeController.Index), "Home");
         }
     }
 }

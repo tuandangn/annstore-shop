@@ -1,5 +1,5 @@
 ﻿@model LoginModel
-<form asp-action="Login" asp-controller="Account" asp-route-returnUrl="@ViewBag.ReturnUrl" asp-area="" method="POST" asp-antiforgery="true" novalidate>
+<form asp-action="SignIn" asp-controller="Account" asp-route-returnUrl="@ViewBag.ReturnUrl" asp-area="" method="POST" asp-antiforgery="true" novalidate>
     <div asp-validation-summary="ModelOnly" class="alert alert-warning"></div>
     <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl"/>
     <div class="form-group">

@@ -42,7 +42,7 @@ namespace Annstore.Web.Areas.Admin.Controllers
         {
             var customerSettings = _customerSettingsSnapshot.Value;
             var model = await _adminCustomerService.GetCustomerModelAsync(id);
-            if (model == null)
+            if (model is NullCustomerModel)
                 return RedirectToAction(nameof(List));
 
             return View(model);

@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Application.Tests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Auth", "Infrastructure\Annstore.Misc\Annstore.Auth.csproj", "{EC9EE6B2-4733-4BCB-AC25-07EBA2185DA1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Annstore.Auth.Tests", "Test\Annstore.Auth.Tests\Annstore.Auth.Tests.csproj", "{418BF7F1-3A42-4810-ABA9-9A0AD9DD224D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{EC9EE6B2-4733-4BCB-AC25-07EBA2185DA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC9EE6B2-4733-4BCB-AC25-07EBA2185DA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC9EE6B2-4733-4BCB-AC25-07EBA2185DA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{418BF7F1-3A42-4810-ABA9-9A0AD9DD224D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{418BF7F1-3A42-4810-ABA9-9A0AD9DD224D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{418BF7F1-3A42-4810-ABA9-9A0AD9DD224D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{418BF7F1-3A42-4810-ABA9-9A0AD9DD224D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +98,7 @@ Global
 		{F4683A69-E755-4839-A5EB-015E7FF8454E} = {E4B121D3-CCDE-4A10-9DEF-9A36AB9F9297}
 		{21318EC1-117E-44FA-B8CD-4138689181EF} = {06F6FAD6-6521-40EC-953D-3EEB204FF669}
 		{EC9EE6B2-4733-4BCB-AC25-07EBA2185DA1} = {BB788F58-456C-4160-BA1B-51978AD62A2F}
+		{418BF7F1-3A42-4810-ABA9-9A0AD9DD224D} = {06F6FAD6-6521-40EC-953D-3EEB204FF669}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F2791539-A026-4016-A8AE-03BDAB6FA16F}

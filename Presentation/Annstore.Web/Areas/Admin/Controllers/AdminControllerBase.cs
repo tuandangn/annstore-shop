@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Annstore.Web.Areas.Admin.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Area(AreaNames.Admin)]
     public class AdminControllerBase : Controller
     {

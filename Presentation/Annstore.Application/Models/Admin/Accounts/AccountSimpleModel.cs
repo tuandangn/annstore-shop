@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Annstore.Application.Models.Admin.Customers;
+using System;
 
 namespace Annstore.Application.Models.Admin.Accounts
 {
@@ -9,6 +10,6 @@ namespace Annstore.Application.Models.Admin.Accounts
 
         public string Email { get; set; }
 
-        public string Customer { get; set; }
+        public CustomerSimpleModel Customer { get; set; }
     }
 }

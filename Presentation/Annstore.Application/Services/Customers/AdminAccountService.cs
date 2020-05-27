@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using Annstore.Core.Common;
 using Annstore.Application.Infrastructure;
 using Annstore.Application.Models.Admin.Common;
 using Annstore.Auth.Entities;
@@ -13,6 +11,7 @@ using Annstore.Application.Infrastructure.Messages.Messages;
 using Annstore.Application.Models.Admin.Accounts;
 using Annstore.Services.Customers;
 using Annstore.Application.Models.Admin.Customers;
+using Annstore.Auth.Services;
 
 namespace Annstore.Application.Services.Customers
 {
@@ -20,13 +19,15 @@ namespace Annstore.Application.Services.Customers
     {
         private readonly UserManager<Account> _userManager;
         private readonly ICustomerService _customerService;
+        private readonly IAccountService _accountService;
         private readonly IMapper _mapper;
 
-        public AdminAccountService(UserManager<Account> userManager, ICustomerService customerService, IMapper mapper)
+        public AdminAccountService(UserManager<Account> userManager, IAccountService accountService, ICustomerService customerService, IMapper mapper)
         {
             _userManager = userManager;
             _customerService = customerService;
             _mapper = mapper;
+            _accountService = accountService;
         }
 
         public async Task<AppResponse<Account>> CreateAccountAsync(AppRequest<AccountModel> request)
@@ -70,23 +71,15 @@ namespace Annstore.Application.Services.Customers
             if (opts.PageSize <= 0)
                 throw new ArgumentException("Page size must greater than 0");
 
-            var accountQuery = from user in _userManager.Users
-                            orderby user.Id
-                            select user;
-            //*TODO*
-            var allAccounts = await accountQuery.ToListAsync().ConfigureAwait(false);
-            var accounts = allAccounts.Skip((opts.PageNumber - 1) * opts.PageSize)
-                .Take(opts.PageSize)
-                .ToList();
-            var pagedAccounts = accounts.ToPagedList(opts.PageSize, opts.PageNumber, allAccounts.Count);
+            var pagedAccounts = await _accountService.GetPagedAccountsAsync(opts.PageNumber, opts.PageSize); 
             var accountModels = new List<AccountSimpleModel>();
             foreach (var account in pagedAccounts)
             {
-                var accountModel = _mapper.Map<AccountSimpleModel>(account);
                 var customer = await _customerService.GetCustomerByIdAsync(account.CustomerId);
                 if (customer == null || customer.Deleted)
                     throw new Exception(AdminMessages.Customer.CustomerIsNotFound);
-                accountModel.Customer = customer.FullName;
+                var accountModel = _mapper.Map<AccountSimpleModel>(account);
+                accountModel.Customer = _mapper.Map<CustomerSimpleModel>(customer);
                 accountModels.Add(accountModel);
             }
             var model = new AccountListModel
@@ -106,7 +99,7 @@ namespace Annstore.Application.Services.Customers
             var account = await _userManager.FindByIdAsync(id.ToString())
                 .ConfigureAwait(false);
             if (account == null)
-                return null;
+                return AccountModel.NullModel;
 
             var model = _mapper.Map<AccountModel>(account);
             await PrepareCustomersForAccountAsync(model)

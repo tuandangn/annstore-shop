@@ -15,8 +15,4 @@
     <ProjectReference Include="..\..\Domain\Annstore.Core\Annstore.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

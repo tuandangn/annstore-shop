@@ -42,7 +42,7 @@ namespace Annstore.Web.Areas.Admin.Controllers
             var hasCustomers = await _adminAccountService.HasCustomersAsync();
             if (!hasCustomers)
             {
-                TempData[AdminDefaults.ErrorMessage] = AdminMessages.Account.AccountIsEmpty;
+                TempData[AdminDefaults.ErrorMessage] = AdminMessages.Account.CustomerIsEmpty;
                 return RedirectToAction(nameof(List));
             }
 
@@ -98,12 +98,12 @@ namespace Annstore.Web.Areas.Admin.Controllers
             var hasCustomers = await _adminAccountService.HasCustomersAsync();
             if (!hasCustomers)
             {
-                TempData[AdminDefaults.ErrorMessage] = AdminMessages.Account.AccountIsEmpty;
+                TempData[AdminDefaults.ErrorMessage] = AdminMessages.Account.CustomerIsEmpty;
                 return RedirectToAction(nameof(List));
             }
             var model = await _adminAccountService.GetAccountModelAsync(id);
 
-            if (model == null)
+            if (model is NullAccountModel)
                 return RedirectToAction(nameof(List));
             return View(model);
         }

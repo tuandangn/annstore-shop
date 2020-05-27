@@ -36,7 +36,9 @@
                                     @item.Email
                                 </td>
                                 <td>
-                                    @item.Customer
+                                    <a asp-action="Edit" asp-controller="Customer" asp-route-id="@item.Customer.Id">
+                                        @item.Customer.FullName
+                                    </a>
                                 </td>
                                 <td class="text-right">
                                     <form method="POST" asp-antiforgery="true" asp-action="Delete">

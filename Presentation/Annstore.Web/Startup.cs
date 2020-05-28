@@ -35,6 +35,7 @@ namespace Annstore.Web
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            //db contexts
             var migrationAssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
             services.AddDbContext<AnnstoreDbContext>(
                 opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Data),
@@ -43,10 +44,12 @@ namespace Annstore.Web
                 opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Auth),
                 sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
 
+            //identity
             services.AddIdentity<Account, Role>()
                 .AddEntityFrameworkStores<AnnstoreAuthDbContext>()
                 .AddDefaultTokenProviders();
 
+            //services
             services.AddScoped<IDbContext, AnnstoreDbContext>();
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICategoryService, CategoryService>();
@@ -65,6 +68,7 @@ namespace Annstore.Web
             var mapper = mapperConfiguration.CreateMapper();
             services.AddSingleton(mapper);
 
+            //mvc
             services.AddMvc()
                 .AddFluentValidation(opts =>
                 {

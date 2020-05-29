@@ -8,7 +8,7 @@ namespace Annstore.Data.Mappings.Catalog
     {
         public void Configure(EntityTypeBuilder<Category> builder)
         {
-            builder.ToTable("Category");
+            builder.ToTable("Category", "dm");
             builder.HasKey(p => p.Id);
 
             builder.Property(p => p.Name).IsRequired().HasMaxLength(200);

@@ -13,8 +13,8 @@ namespace Annstore.Auth
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnnstoreAuthDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnnstoreAuthDbContext).Assembly);
         }
     }
 }

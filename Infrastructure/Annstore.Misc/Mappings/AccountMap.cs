@@ -8,7 +8,7 @@ namespace Annstore.Auth.Mappings
     {
         public void Configure(EntityTypeBuilder<Account> builder)
         {
-            builder.ToTable("Account");
+            builder.ToTable("Account", "auth");
         }
     }
 }

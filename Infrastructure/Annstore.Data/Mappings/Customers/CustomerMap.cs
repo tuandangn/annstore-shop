@@ -8,7 +8,7 @@ namespace Annstore.Data.Mappings.Customers
     {
         public void Configure(EntityTypeBuilder<Customer> builder)
         {
-            builder.ToTable("Customer");
+            builder.ToTable("Customer", "dm");
             builder.HasKey(p => p.Id);
         }
     }

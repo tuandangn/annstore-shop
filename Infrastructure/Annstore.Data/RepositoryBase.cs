@@ -4,11 +4,11 @@ using Annstore.Core;
 
 namespace Annstore.Data
 {
-    public class Repository<T> : IRepository<T> where T : BaseEntity
+    public class RepositoryBase<T> : IRepository<T> where T : class, IAggregateRoot
     {
         private readonly IDbContext _dbContext;
 
-        public Repository(IDbContext dbContext)
+        public RepositoryBase(IDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -20,7 +20,7 @@ namespace Annstore.Data
             return _dbContext.FindAsync<T>(id);
         }
 
-        public async ValueTask<T> InsertAsync(T entity)
+        public async virtual ValueTask<T> InsertAsync(T entity)
         {
             var result = await _dbContext.AddAsync(entity);
             await _dbContext.SaveChangesAsync()
@@ -29,7 +29,7 @@ namespace Annstore.Data
             return result.Entity;
         }
 
-        public async ValueTask<T> UpdateAsync(T entity)
+        public async virtual ValueTask<T> UpdateAsync(T entity)
         {
             var result = _dbContext.Update(entity);
             await _dbContext.SaveChangesAsync()
@@ -38,7 +38,7 @@ namespace Annstore.Data
             return result.Entity;
         }
 
-        public async Task DeleteAsync(T entity)
+        public async virtual Task DeleteAsync(T entity)
         {
             _dbContext.Remove(entity);
             await _dbContext.SaveChangesAsync()

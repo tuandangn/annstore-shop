@@ -34,7 +34,7 @@ namespace Annstore.Services.Customers
             if (customer == null)
                 throw new ArgumentNullException(nameof(customer));
 
-            customer.Deleted = true;
+            customer.IsDeleted(true);
             await _customerRepository.UpdateAsync(customer)
                 .ConfigureAwait(false);
         }

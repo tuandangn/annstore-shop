@@ -8,12 +8,12 @@ namespace Annstore.Auth
     {
         public AnnstoreAuthDbContext(DbContextOptions<AnnstoreAuthDbContext> opts) : base(opts)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.HasDefaultSchema("auth");
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnnstoreAuthDbContext).Assembly);
         }
     }

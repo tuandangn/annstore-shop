@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Domain\Annstore.Core\Annstore.Core.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Annstore.Auth\Annstore.Auth.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Annstore.Misc\Annstore.Auth.csproj" />
     <ProjectReference Include="..\TestHelper\Annstore.TestHelper.csproj" />
   </ItemGroup>

@@ -17,7 +17,7 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task GetCustomersAsync_ReturnAllCustomers()
         {
-            var availableCustomers = new List<Customer> { new Customer { Id = 1 } };
+            var availableCustomers = new List<Customer> { Customer.CreateWithId(1) };
             var customerRepositoryMock = new Mock<IRepository<Customer>>();
             customerRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCustomers.ToAsync())
@@ -34,7 +34,9 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task GetCustomersAsync_ExcludeDeletedCustomer()
         {
-            var availableCustomers = new List<Customer> { new Customer { Id = 1, Deleted = true } };
+            var deletedCustomer = Customer.CreateWithId(1);
+            deletedCustomer.IsDeleted(true);
+            var availableCustomers = new List<Customer> { deletedCustomer };
             var customerRepositoryMock = new Mock<IRepository<Customer>>();
             customerRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCustomers.ToAsync())
@@ -61,7 +63,8 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task CreateCustomerAsync_CustomerIsNotNull_InsertCustomer()
         {
-            var customer = new Customer { Id = 1, FullName = "full name" };
+            var customer = Customer.CreateWithId(1);
+            customer.FullName = "full name";
             var customerRepositoryMock = new Mock<IRepository<Customer>>();
             customerRepositoryMock.Setup(c => c.InsertAsync(customer))
                 .ReturnsAsync(customer)
@@ -88,7 +91,8 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task UpdateCustomerAsync_CustomerIsNotNull_UpdateCustomer()
         {
-            var customer = new Customer { Id = 1, FullName = "full name" };
+            var customer = Customer.CreateWithId(1);
+            customer.FullName = "full name";
             var customerRepositoryMock = new Mock<IRepository<Customer>>();
             customerRepositoryMock.Setup(c => c.UpdateAsync(customer))
                 .ReturnsAsync(customer)
@@ -115,7 +119,8 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task DeleteCustomerAsync_CustomerIsNotNull_DeleteCustomer()
         {
-            var customer = new Customer { Id = 1, FullName = "full name" };
+            var customer = Customer.CreateWithId(1);
+            customer.FullName = "full name";
             var customerRepositoryMock = new Mock<IRepository<Customer>>();
             customerRepositoryMock.Setup(c => c.UpdateAsync(It.Is<Customer>(cust => cust.Deleted)))
                 .ReturnsAsync(customer)
@@ -155,9 +160,9 @@ namespace Annstore.Services.Tests.Customers
             var pageSize = 2;
             var availableCustomers = new List<Customer>
             {
-                new Customer{Id = 1 }, new Customer{Id = 2 },
-                new Customer{Id = 3 }, new Customer{Id = 4 },
-                new Customer{Id = 5 }, new Customer{Id = 6 }
+                Customer.CreateWithId(1), Customer.CreateWithId(2),
+                Customer.CreateWithId(3), Customer.CreateWithId(4),
+                Customer.CreateWithId(5), Customer.CreateWithId(6)
             };
             var customerRepositoryMock = new Mock<IRepository<Customer>>();
             customerRepositoryMock.Setup(c => c.Table)
@@ -181,7 +186,7 @@ namespace Annstore.Services.Tests.Customers
         public async Task GetCustomerByIdAsync_ReturnCustomer()
         {
             var id = 1;
-            var customer = new Customer { Id = id };
+            var customer = Customer.CreateWithId(id);
             var customerRepositoryMock = new Mock<IRepository<Customer>>();
             customerRepositoryMock.Setup(c => c.FindByIdAsync(id))
                 .ReturnsAsync(customer)
@@ -216,7 +221,9 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task HasCustomersAsync_ExcludeDeletedCustomer()
         {
-            var availableCustomer = new List<Customer> { new Customer { Deleted = true } };
+            var deletedCustomer = Customer.CreateWithId(1);
+            deletedCustomer.IsDeleted(true);
+            var availableCustomer = new List<Customer> { deletedCustomer };
             var customerRepositoryMock = new Mock<IRepository<Customer>>();
             customerRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCustomer.ToAsync())

@@ -160,7 +160,7 @@ namespace Annstore.Web.Tests.Admin
         public async Task EditPost_ErrorResponse_RedisplayViewWithValidModel()
         {
             var categoryId = 1;
-            var category = new Category { Id = categoryId };
+            var category = Category.CreateWithId(categoryId);
             var model = new CategoryModel { Id = categoryId };
             var showHidden = true;
             var errorResponse = AppResponse.ErrorResult<Category>(string.Empty);
@@ -185,7 +185,7 @@ namespace Annstore.Web.Tests.Admin
         public async Task EditPost_SuccessResponse_RedirectToList()
         {
             var categoryId = 1;
-            var category = new Category { Id = categoryId };
+            var category = Category.CreateWithId(categoryId);
             var model = new CategoryModel { Id = categoryId };
             var successResponse = AppResponse.SuccessResult(category);
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
@@ -333,7 +333,7 @@ namespace Annstore.Web.Tests.Admin
         public async Task Delete_ErrorResponse_RedirectToList()
         {
             var categoryId = 1;
-            var category = new Category { Id = categoryId };
+            var category = Category.CreateWithId(categoryId);
             var errorResponse = AppResponse.ErrorResult<Category>(string.Empty);
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
             adminCategoryServiceMock.Setup(c => c.DeleteCategoryAsync(It.Is<AppRequest<int>>(req => req.Data == categoryId)))
@@ -353,7 +353,7 @@ namespace Annstore.Web.Tests.Admin
         public async Task Delete_SuccessResponse_RedirectToList()
         {
             var categoryId = 1;
-            var category = new Category { Id = categoryId };
+            var category = Category.CreateWithId(categoryId);
             var successResponse = AppResponse.SuccessResult(category);
             var adminCategoryServiceMock = new Mock<IAdminCategoryService>();
             adminCategoryServiceMock.Setup(c => c.DeleteCategoryAsync(It.Is<AppRequest<int>>(req => req.Data == categoryId)))

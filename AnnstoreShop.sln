@@ -29,13 +29,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Application", "Pre
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Application.Tests", "Test\Annstore.Application.Tests\Annstore.Application.Tests.csproj", "{21318EC1-117E-44FA-B8CD-4138689181EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Auth", "Infrastructure\Annstore.Misc\Annstore.Auth.csproj", "{EC9EE6B2-4733-4BCB-AC25-07EBA2185DA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Auth", "Infrastructure\Annstore.Auth\Annstore.Auth.csproj", "{EC9EE6B2-4733-4BCB-AC25-07EBA2185DA1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Auth.Tests", "Test\Annstore.Auth.Tests\Annstore.Auth.Tests.csproj", "{418BF7F1-3A42-4810-ABA9-9A0AD9DD224D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Annstore.Web.IntegratedTests", "Test\Integrated\Annstore.Web.IntegratedTests\Annstore.Web.IntegratedTests.csproj", "{BDD0A868-7ECF-4545-B468-05DEDD3E2F76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Annstore.Web.IntegratedTests", "Test\Integrated\Annstore.Web.IntegratedTests\Annstore.Web.IntegratedTests.csproj", "{BDD0A868-7ECF-4545-B468-05DEDD3E2F76}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integrated", "Integrated", "{0A13696B-BF44-4899-998B-DCEB5F39F504}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Annstore.Query", "Infrastructure\Annstore.Query\Annstore.Query.csproj", "{840C30C5-1A79-417E-B04C-FB370F1E04E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,10 @@ Global
 		{BDD0A868-7ECF-4545-B468-05DEDD3E2F76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDD0A868-7ECF-4545-B468-05DEDD3E2F76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDD0A868-7ECF-4545-B468-05DEDD3E2F76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{840C30C5-1A79-417E-B04C-FB370F1E04E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{840C30C5-1A79-417E-B04C-FB370F1E04E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{840C30C5-1A79-417E-B04C-FB370F1E04E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{840C30C5-1A79-417E-B04C-FB370F1E04E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +115,7 @@ Global
 		{418BF7F1-3A42-4810-ABA9-9A0AD9DD224D} = {06F6FAD6-6521-40EC-953D-3EEB204FF669}
 		{BDD0A868-7ECF-4545-B468-05DEDD3E2F76} = {0A13696B-BF44-4899-998B-DCEB5F39F504}
 		{0A13696B-BF44-4899-998B-DCEB5F39F504} = {06F6FAD6-6521-40EC-953D-3EEB204FF669}
+		{840C30C5-1A79-417E-B04C-FB370F1E04E8} = {BB788F58-456C-4160-BA1B-51978AD62A2F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F2791539-A026-4016-A8AE-03BDAB6FA16F}

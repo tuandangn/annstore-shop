@@ -7,8 +7,10 @@ namespace Annstore.Core.Common
     [Serializable]
     public sealed class PagedList<T> : IPagedList<T>
     {
-        private PagedList(int pageSize, int pageNumber, int totalItems)
+        public PagedList(IEnumerable<T> items, int pageSize, int pageNumber, int totalItems)
         {
+            if (items == null)
+                throw new ArgumentNullException(nameof(items));
             if (pageSize <= 0)
                 throw new ArgumentException($"{nameof(pageSize)} cannot less than or equal to 0");
             if (totalItems < 0)
@@ -18,21 +20,7 @@ namespace Annstore.Core.Common
             PageNumber = pageNumber;
             TotalPages = (int)Math.Ceiling((double)totalItems / PageSize);
             TotalItems = totalItems;
-        }
-
-        public PagedList(IEnumerable<T> source, int pageSize, int pageNumber, int totalItems) : this(pageSize, pageNumber, totalItems)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            Items = source;
-        }
-        public PagedList(IList<T> source, int pageSize, int pageNumber, int totalItems) : this(pageSize, pageNumber, totalItems)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            Items = source;
+            Items = items;
         }
 
         public int PageSize { get; }

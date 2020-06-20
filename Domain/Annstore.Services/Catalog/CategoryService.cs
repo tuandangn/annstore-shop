@@ -46,8 +46,8 @@ namespace Annstore.Services.Catalog
 
             var result = await _categoryRepository.UpdateAsync(category)
                 .ConfigureAwait(false);
-
             return result;
+
         }
 
         public async Task<Category> CreateCategoryAsync(Category category)
@@ -66,7 +66,7 @@ namespace Annstore.Services.Catalog
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
 
-            category.Deleted = true;
+            category.IsDeleted(true);
             await _categoryRepository.UpdateAsync(category)
                 .ConfigureAwait(false);
         }

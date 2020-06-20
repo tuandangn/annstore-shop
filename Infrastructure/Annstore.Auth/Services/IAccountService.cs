@@ -9,6 +9,7 @@ namespace Annstore.Auth.Services
     public interface IAccountService
     {
         Task<List<Account>> GetAccountsAsync();
+
         Task<IPagedList<Account>> GetPagedAccountsAsync(int pageNumber, int pageSize);
 
         Task<List<Account>> GetAccountsOfCustomerAsync(Customer customer);

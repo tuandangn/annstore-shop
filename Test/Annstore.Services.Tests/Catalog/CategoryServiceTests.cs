@@ -17,7 +17,12 @@ namespace Annstore.Services.Tests.Catalog
         [Fact]
         public async Task GetCategoriesAsync_ReturnAllCategories()
         {
-            var availableCategories = new[] { new Category { Id = 1, Published = true }, new Category { Id = 2, Published = false } };
+            var publishedCategory = Category.CreateWithId(1);
+            publishedCategory.Published = true;
+            var unpublishedCategory = Category.CreateWithId(2);
+            unpublishedCategory.Published = false;
+
+            var availableCategories = new[] { publishedCategory, unpublishedCategory };
             var showHidden = false;
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             categoryRepositoryMock
@@ -35,7 +40,9 @@ namespace Annstore.Services.Tests.Catalog
         [Fact]
         public async Task GetCategoriesAsync_ShowHidden_IncludeNotPublishedCategories()
         {
-            var availableCategories = new[] { new Category { Id = 1, Published = false }, new Category { Id = 2, Published = false } };
+            var unpublishedCategory1 = Category.CreateWithId(1);
+            var unpublishedCategory2 = Category.CreateWithId(2);
+            var availableCategories = new[] { unpublishedCategory1, unpublishedCategory2 };
             var showHidden = true;
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             categoryRepositoryMock
@@ -56,7 +63,7 @@ namespace Annstore.Services.Tests.Catalog
         public async Task GetCategoryByIdAsync_FindCategoryById()
         {
             var id = 1;
-            var category = new Category { Id = id };
+            var category = Category.CreateWithId(id);
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             categoryRepositoryMock.Setup(r => r.FindByIdAsync(id))
                 .ReturnsAsync(category)
@@ -197,47 +204,53 @@ namespace Annstore.Services.Tests.Catalog
         [Fact]
         public async Task GetCategoryBreadcrumbAsync_DeepLevelIsGreaterThanZero_IncludeParentCategoryHierarchy()
         {
-            var category = new Category { Id = 1, ParentId = 2 };
-            var parentCategory = new Category { Id = 2, ParentId = 3 };
-            var ancestorCategory = new Category { Id = 3 };
+            var category1WithParentIdIs2 = Category.CreateWithId(1);
+            category1WithParentIdIs2.ParentId = 2;
+            var category2WithParentIdIs3 = Category.CreateWithId(2);
+            category2WithParentIdIs3.ParentId = 3;
+            var category3WithParentIdIs0 = Category.CreateWithId(3);
             var deepLevel = 2;
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             var showHidden = true;
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(2))
-                .ReturnsAsync(parentCategory)
+                .ReturnsAsync(category2WithParentIdIs3)
                 .Verifiable();
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(3))
-                .ReturnsAsync(ancestorCategory)
+                .ReturnsAsync(category3WithParentIdIs0)
                 .Verifiable();
             var categoryService = new CategoryService(categoryRepositoryMock.Object);
 
-            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel,showHidden);
+            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category1WithParentIdIs2, deepLevel, showHidden);
 
             Assert.Equal(3, categoryBreadcrumb.Count);
-            Assert.Equal(ancestorCategory, categoryBreadcrumb[0]);
-            Assert.Equal(parentCategory, categoryBreadcrumb[1]);
-            Assert.Equal(category, categoryBreadcrumb[2]);
+            Assert.Equal(category3WithParentIdIs0, categoryBreadcrumb[0]);
+            Assert.Equal(category2WithParentIdIs3, categoryBreadcrumb[1]);
+            Assert.Equal(category1WithParentIdIs2, categoryBreadcrumb[2]);
             categoryRepositoryMock.Verify();
         }
 
         [Fact]
         public async Task GetCategoryBreadcrumbAsync_ShowHiddenIsFalse_ExcludeNotPublishedAndDeletedCategories()
         {
-            var category = new Category { Id = 1, ParentId = 2 };
-            var parentCategory = new Category { Id = 2, ParentId = 3, Deleted = true };
-            var ancestorCategory = new Category { Id = 3, Published = false };
+            var category1WithParentIdIs2 = Category.CreateWithId(1);
+            category1WithParentIdIs2.ParentId = 2;
+            var deletedCategory2WithParentIdIs3 = Category.CreateWithId(2);
+            deletedCategory2WithParentIdIs3.IsDeleted(true);
+            deletedCategory2WithParentIdIs3.ParentId = 3;
+            var unpublishedCategory3WithParentIdIs0 = Category.CreateWithId(3);
+            unpublishedCategory3WithParentIdIs0.Published = false;
             var deepLevel = 2;
             var showHidden = false;
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(2))
-                .ReturnsAsync(parentCategory)
+                .ReturnsAsync(deletedCategory2WithParentIdIs3)
                 .Verifiable();
             var categoryService = new CategoryService(categoryRepositoryMock.Object);
 
-            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel, showHidden);
+            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category1WithParentIdIs2, deepLevel, showHidden);
 
             Assert.Single(categoryBreadcrumb);
-            Assert.Equal(category, categoryBreadcrumb[0]);
+            Assert.Equal(category1WithParentIdIs2, categoryBreadcrumb[0]);
             categoryRepositoryMock.Verify();
         }
 
@@ -245,24 +258,26 @@ namespace Annstore.Services.Tests.Catalog
         public async Task GetCategoryBreadcrumbAsync_ParentCategoryIsNotFound_ReturnCurrentResult()
         {
             var notFoundCategoryId = 5;
-            var category = new Category { Id = 1, ParentId = 2 };
-            var parentCategory = new Category { Id = 2, ParentId = notFoundCategoryId };
+            var category1WithParentIdIs2 = Category.CreateWithId(1);
+            category1WithParentIdIs2.ParentId = 2;
+            var category2WithParentIdIsNotFound = Category.CreateWithId(2);
+            category2WithParentIdIsNotFound.ParentId = notFoundCategoryId;
             var deepLevel = 2;
             var showHidden = true;
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(2))
-                .ReturnsAsync(parentCategory)
+                .ReturnsAsync(category2WithParentIdIsNotFound)
                 .Verifiable();
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(notFoundCategoryId))
                 .ReturnsAsync((Category)null)
                 .Verifiable();
             var categoryService = new CategoryService(categoryRepositoryMock.Object);
 
-            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel, showHidden);
+            var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category1WithParentIdIs2, deepLevel, showHidden);
 
             Assert.Equal(2, categoryBreadcrumb.Count);
-            Assert.Equal(parentCategory, categoryBreadcrumb[0]);
-            Assert.Equal(category, categoryBreadcrumb[1]);
+            Assert.Equal(category2WithParentIdIsNotFound, categoryBreadcrumb[0]);
+            Assert.Equal(category1WithParentIdIs2, categoryBreadcrumb[1]);
             categoryRepositoryMock.Verify();
         }
 
@@ -297,9 +312,9 @@ namespace Annstore.Services.Tests.Catalog
             var showHidden = true;
             var availableCategories = new List<Category>
             {
-                new Category{Id = 1 }, new Category{Id = 2 },
-                new Category{Id = 3 }, new Category{Id = 4 },
-                new Category{Id = 5 }, new Category{Id = 6 }
+                Category.CreateWithId(1), Category.CreateWithId(2),
+                Category.CreateWithId(3), Category.CreateWithId(4),
+                Category.CreateWithId(5), Category.CreateWithId(6)
             };
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             categoryRepositoryMock.Setup(c => c.Table)
@@ -319,14 +334,25 @@ namespace Annstore.Services.Tests.Catalog
         [Fact]
         public async Task GetPagedCategoriesAsync_ShowHiddenIsFalse_ExcludeNotPublishedAndDeletedCategories()
         {
+            var publishedCategory1 = Category.CreateWithId(1);
+            publishedCategory1.Published = true;
+            var publishedCategory2 = Category.CreateWithId(2);
+            publishedCategory2.Published = true;
+            var publishedCategory3 = Category.CreateWithId(3);
+            publishedCategory3.Published = true;
+            var unpublishedCategory1 = Category.CreateWithId(4);
+            unpublishedCategory1.Published = false;
+            var unpublishedCategory2 = Category.CreateWithId(5);
+            unpublishedCategory2.Published = false;
+            var unpublishedCategory3 = Category.CreateWithId(6);
+            unpublishedCategory3.Published = false;
             var pageNumber = 2;
             var pageSize = 2;
             var showHidden = false;
             var availableCategories = new List<Category>
             {
-                new Category{Id = 1, Published = true }, new Category{Id = 2, Published = true },
-                new Category{Id = 3, Published = true }, new Category{Id = 4, Published = false },
-                new Category{Id = 5, Published = false }, new Category{Id = 6, Published = false }
+                publishedCategory1, publishedCategory2, publishedCategory3,
+                unpublishedCategory1, unpublishedCategory2, unpublishedCategory3
             };
             var categoryRepositoryMock = new Mock<IRepository<Category>>();
             categoryRepositoryMock.Setup(c => c.Table)

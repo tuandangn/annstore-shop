@@ -19,6 +19,10 @@ using Annstore.Application.Mappings;
 using Annstore.Services.Customers;
 using Annstore.Application.Infrastructure.Settings;
 using Annstore.Auth.Services;
+using Annstore.Query;
+using Annstore.Core.Events;
+using Annstore.Services.Events;
+using Annstore.Core.Common;
 
 namespace Annstore.Web
 {
@@ -40,6 +44,9 @@ namespace Annstore.Web
             services.AddDbContext<AnnstoreDbContext>(
                 opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Data),
                 sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
+            services.AddDbContext<AnnstoreQueryDbContext.QueryDbContext>(
+                opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.QueryData),
+                sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
             services.AddDbContext<AnnstoreAuthDbContext>(
                 opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Auth),
                 sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
@@ -51,7 +58,8 @@ namespace Annstore.Web
 
             //services
             services.AddScoped<IDbContext, AnnstoreDbContext>();
-            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IQueryDbContext, AnnstoreQueryDbContext>();
+            services.AddTransient(typeof(IRepository<>), typeof(RepositoryBase<>));
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<ICustomerService, CustomerService>();
             services.AddTransient<IAdminCategoryService, AdminCategoryService>();
@@ -75,6 +83,16 @@ namespace Annstore.Web
                     opts.RegisterValidatorsFromAssembly(typeof(Startup).Assembly);
                     opts.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
                 });
+
+            //helpers
+            var assemblyHelper = new AssemblyHelper();
+            services.AddSingleton<IAssemblyHelper>(assemblyHelper);
+            services.AddSingleton<IStringHelper, StringHelper>();
+
+            //event
+            services.AddScoped<IEventPublisher, EventPublisher>();
+            services.AddScoped<DefaultEventHandler>();
+            EventPublisher.RegisterEventHandlers(assemblyHelper.GetAnnstoreAssemblies());
 
             //settings
             var categorySettingsSection = _configuration.GetSection("CategorySettings");
@@ -101,8 +119,7 @@ namespace Annstore.Web
                 options.Lockout.AllowedForNewUsers = true;
 
                 // User settings.
-                options.User.AllowedUserNameCharacters =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = false;
             });
 

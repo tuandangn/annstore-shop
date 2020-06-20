@@ -6,13 +6,12 @@ namespace Annstore.Data
     {
         public AnnstoreDbContext(DbContextOptions<AnnstoreDbContext> opts) : base(opts)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnnstoreDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnnstoreDbContext).Assembly);
         }
     }
 }

@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Annstore.Auth.Mappings
 {
-    public class AccountMap : IEntityTypeConfiguration<Account>
+    public class RoleMap : IEntityTypeConfiguration<Role>
     {
-        public void Configure(EntityTypeBuilder<Account> builder)
+        public void Configure(EntityTypeBuilder<Role> builder)
         {
-            builder.ToTable("Account", "auth");
+            builder.ToTable("Role");
         }
     }
 }

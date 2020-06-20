@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using System.Linq;
 using Annstore.Application.Infrastructure;
 using Annstore.Application.Models.Admin.Common;
-using Annstore.Auth.Entities;
 using Annstore.Application.Infrastructure.Messages.Messages;
 using Annstore.Application.Models.Admin.Accounts;
 using Annstore.Services.Customers;
 using Annstore.Application.Models.Admin.Customers;
+using Annstore.Auth.Entities;
 using Annstore.Auth.Services;
 
 namespace Annstore.Application.Services.Customers

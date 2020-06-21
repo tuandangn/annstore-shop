@@ -4,6 +4,6 @@ namespace Annstore.Core.Events
 {
     public interface IEventPublisher
     {
-        Task Publish<TMessage>(TMessage message) where TMessage : Message;
+        Task PublishAsync<TMessage>(TMessage eventArgs) where TMessage : Message;
     }
 }

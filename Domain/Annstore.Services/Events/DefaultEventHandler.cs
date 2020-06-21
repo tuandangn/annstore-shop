@@ -18,35 +18,34 @@ namespace Annstore.Services.Events
         {
 
         }
-        public Task Handle(EntityCreatedEvent<Category> targetEvent)
+        public Task HandleAsync(EntityCreatedEvent<Category> targetEvent)
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
 
-        public Task Handle(EntityDeletedEvent<Category> targetEvent)
+        public Task HandleAsync(EntityDeletedEvent<Category> targetEvent)
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
 
-        public Task Handle(EntityUpdatedEvent<Category> targetEvent)
+        public Task HandleAsync(EntityUpdatedEvent<Category> targetEvent)
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
 
-        public Task Handle(EntityCreatedEvent<Customer> targetEvent)
+        public Task HandleAsync(EntityCreatedEvent<Customer> targetEvent)
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
 
-        public Task Handle(EntityDeletedEvent<Customer> targetEvent)
+        public Task HandleAsync(EntityDeletedEvent<Customer> targetEvent)
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
 
-
-        public Task Handle(EntityUpdatedEvent<Customer> targetEvent)
+        public Task HandleAsync(EntityUpdatedEvent<Customer> targetEvent)
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
     }
 }

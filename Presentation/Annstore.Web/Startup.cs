@@ -23,6 +23,14 @@ using Annstore.Query;
 using Annstore.Core.Events;
 using Annstore.Services.Events;
 using Annstore.Core.Common;
+using Annstore.Data.Catalog;
+using Annstore.Data.Customers;
+using Microsoft.Extensions.Options;
+using Annstore.Query.Infrastructure;
+using Annstore.DataMixture.Events;
+using Annstore.DataMixture.Services.Catalog;
+using Annstore.DataMixture;
+using Annstore.DataMixture.Mappings;
 
 namespace Annstore.Web
 {
@@ -44,12 +52,19 @@ namespace Annstore.Web
             services.AddDbContext<AnnstoreDbContext>(
                 opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Data),
                 sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
-            services.AddDbContext<AnnstoreQueryDbContext.QueryDbContext>(
-                opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.QueryData),
-                sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
             services.AddDbContext<AnnstoreAuthDbContext>(
                 opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Auth),
                 sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
+
+            //query
+            services.AddSingleton<IQueryDbSettings>(sp =>
+                sp.GetRequiredService<IOptions<QueryDbSettings>>().Value);
+            services.AddScoped<IQueryDbContext, AnnstoreQueryDbContext>();
+            services.AddTransient(typeof(IQueryRepository<>), typeof(QueryRepository<>));
+
+            //mix
+            services.AddScoped(typeof(IMixRepository<>), typeof(MixRepository<>));
+            services.AddTransient<IMixCategoryService, MixCategoryService>();
 
             //identity
             services.AddIdentity<Account, Role>()
@@ -60,6 +75,8 @@ namespace Annstore.Web
             services.AddScoped<IDbContext, AnnstoreDbContext>();
             services.AddScoped<IQueryDbContext, AnnstoreQueryDbContext>();
             services.AddTransient(typeof(IRepository<>), typeof(RepositoryBase<>));
+            services.AddTransient<ICategoryRepository, CategoryRepository>();
+            services.AddTransient<ICustomerRepository, CustomerRepository>();
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<ICustomerService, CustomerService>();
             services.AddTransient<IAdminCategoryService, AdminCategoryService>();
@@ -72,6 +89,7 @@ namespace Annstore.Web
             var mapperConfiguration = new MapperConfiguration(mc =>
             {
                 mc.AddProfile<AdminModelProfile>();
+                mc.AddProfile<MixDataProfile>();
             });
             var mapper = mapperConfiguration.CreateMapper();
             services.AddSingleton(mapper);
@@ -92,6 +110,7 @@ namespace Annstore.Web
             //event
             services.AddScoped<IEventPublisher, EventPublisher>();
             services.AddScoped<DefaultEventHandler>();
+            services.AddScoped<MixDataEventHandler>();
             EventPublisher.RegisterEventHandlers(assemblyHelper.GetAnnstoreAssemblies());
 
             //settings
@@ -103,6 +122,9 @@ namespace Annstore.Web
 
             var customerSettingsSection = _configuration.GetSection("CustomerSettings");
             services.Configure<CustomerSettings>(customerSettingsSection);
+
+            var queryDbSettingsSection = _configuration.GetSection("QueryDbSettings");
+            services.Configure<QueryDbSettings>(queryDbSettingsSection);
 
             services.Configure<IdentityOptions>(options =>
             {

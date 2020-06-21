@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Annstore.Services.Events
 {
@@ -11,10 +13,12 @@ namespace Annstore.Services.Events
     {
         private static IEnumerable<Type> _handlerTypes;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ConcurrentDictionary<Type, object> _savedHandlerObjects;
 
         public EventPublisher(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _savedHandlerObjects = new ConcurrentDictionary<Type, object>();
         }
 
         public static void RegisterEventHandlers(IEnumerable<Assembly> assemblies)
@@ -39,9 +43,19 @@ namespace Annstore.Services.Events
             _handlerTypes = handlerTypes;
         }
 
-        public Task Publish<TMessage>(TMessage message) where TMessage : Message
+        public async Task PublishAsync<TMessage>(TMessage message) where TMessage : Message
         {
-            throw new NotImplementedException();
+            var targetHandlerType = typeof(IEventHandler<TMessage>);
+            foreach(var handlerType in _handlerTypes)
+            {
+                if (!targetHandlerType.IsAssignableFrom(handlerType))
+                    continue;
+                var handler = _savedHandlerObjects.GetOrAdd(handlerType, type =>
+                {
+                    return _serviceProvider.GetRequiredService(handlerType);
+                });
+                await ((IEventHandler<TMessage>)handler).HandleAsync(message).ConfigureAwait(false);
+            }
         }
     }
 }

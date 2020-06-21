@@ -4,16 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Annstore.Core.Common;
 using Annstore.Core.Entities.Catalog;
-using Annstore.Data;
+using Annstore.Data.Catalog;
 using Microsoft.EntityFrameworkCore;
 
 namespace Annstore.Services.Catalog
 {
     public sealed class CategoryService : ICategoryService
     {
-        private readonly IRepository<Category> _categoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public CategoryService(IRepository<Category> categoryRepository)
+        public CategoryService(ICategoryRepository categoryRepository)
         {
             _categoryRepository = categoryRepository;
         }
@@ -66,8 +66,7 @@ namespace Annstore.Services.Catalog
             if (category == null)
                 throw new ArgumentNullException(nameof(category));
 
-            category.IsDeleted(true);
-            await _categoryRepository.UpdateAsync(category)
+            await _categoryRepository.DeleteAsync(category)
                 .ConfigureAwait(false);
         }
 
@@ -120,6 +119,27 @@ namespace Annstore.Services.Catalog
             var result = categories.ToPagedList(pageSize, pageNumber, allCategories.Count);
 
             return result;
+        }
+
+        public async Task<List<Category>> GetChildrenCategoriesAsync(Category parent)
+        {
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent));
+
+            try
+            {
+                var query = from category in _categoryRepository.Table
+                            where !category.Deleted && category.Published &&
+                                category.ParentId == parent.Id
+                            orderby category.Id descending
+                            select category;
+
+                return await query.ToListAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

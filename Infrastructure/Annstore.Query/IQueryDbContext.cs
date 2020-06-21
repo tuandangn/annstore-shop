@@ -1,14 +1,9 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using Annstore.Query.Infrastructure;
 
 namespace Annstore.Query
 {
     public interface IQueryDbContext
     {
-        TEntity Find<TEntity>(params object[] keyValues) where TEntity : class;
-
-        ValueTask<TEntity> FindAsync<TEntity>(params object[] keyValues) where TEntity : class;
-
-        IQueryable<TEntity> GetAll<TEntity>() where TEntity : class;
+        IReadonlyMongoDatabase Database { get; }
     }
 }

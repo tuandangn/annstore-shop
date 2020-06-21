@@ -2,8 +2,8 @@
 
 namespace Annstore.Core.Events
 {
-    public interface IEventHandler<in TEvent> where TEvent : EventBase
+    public interface IEventHandler<in TMessage> where TMessage : Message
     {
-        Task Handle(TEvent targetEvent);
+        Task HandleAsync(TMessage eventArgs);
     }
 }

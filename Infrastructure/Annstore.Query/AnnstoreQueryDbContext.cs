@@ -1,43 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Annstore.Query.Infrastructure;
+using MongoDB.Driver;
 
 namespace Annstore.Query
 {
     public sealed class AnnstoreQueryDbContext : IQueryDbContext
     {
-        private readonly DbContext _dbContext;
+        private readonly IReadonlyMongoDatabase _database;
 
-        public AnnstoreQueryDbContext(QueryDbContext dbContext)
+        public AnnstoreQueryDbContext(IQueryDbSettings settings)
         {
-            _dbContext = dbContext;
+            var client = new MongoClient(settings.ConnectionString);
+            var database = client.GetDatabase(settings.DatabaseName);
+            _database = ReadonlyMongoDatabase.CreateFrom(database);
         }
 
-        public TEntity Find<TEntity>(params object[] keyValues) where TEntity : class
-        {
-            return _dbContext.Find<TEntity>(keyValues);
-        }
-
-        public ValueTask<TEntity> FindAsync<TEntity>(params object[] keyValues) where TEntity : class
-        {
-            return _dbContext.FindAsync<TEntity>(keyValues);
-        }
-
-        public IQueryable<TEntity> GetAll<TEntity>() where TEntity : class
-        {
-            return _dbContext.Set<TEntity>().AsNoTracking();
-        }
-
-        public sealed class QueryDbContext : DbContext
-        {
-            public QueryDbContext(DbContextOptions<QueryDbContext> opts) : base(opts) { }
-
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
-            {
-                base.OnModelCreating(modelBuilder);
-                modelBuilder.HasDefaultSchema("query");
-                modelBuilder.ApplyConfigurationsFromAssembly(typeof(QueryDbContext).Assembly);
-            }
-        }
+        public IReadonlyMongoDatabase Database => _database;
     }
 }

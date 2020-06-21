@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Annstore.Core.Entities.Catalog;
-using Annstore.Data;
+using Annstore.Data.Catalog;
 using Annstore.Services.Catalog;
 using Moq;
 using TestHelper;
@@ -24,7 +24,7 @@ namespace Annstore.Services.Tests.Catalog
 
             var availableCategories = new[] { publishedCategory, unpublishedCategory };
             var showHidden = false;
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock
                 .Setup(r => r.Table).Returns(availableCategories.ToAsync())
                 .Verifiable();
@@ -44,7 +44,7 @@ namespace Annstore.Services.Tests.Catalog
             var unpublishedCategory2 = Category.CreateWithId(2);
             var availableCategories = new[] { unpublishedCategory1, unpublishedCategory2 };
             var showHidden = true;
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock
                 .Setup(r => r.Table).Returns(availableCategories.ToAsync())
                 .Verifiable();
@@ -64,7 +64,7 @@ namespace Annstore.Services.Tests.Catalog
         {
             var id = 1;
             var category = Category.CreateWithId(id);
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock.Setup(r => r.FindByIdAsync(id))
                 .ReturnsAsync(category)
                 .Verifiable();
@@ -81,7 +81,7 @@ namespace Annstore.Services.Tests.Catalog
         [Fact]
         public async Task UpdateCategoryAsync_CategoryIsNull_ThrowArgumentNullException()
         {
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.UpdateCategoryAsync(null));
         }
@@ -90,7 +90,7 @@ namespace Annstore.Services.Tests.Catalog
         public async Task UpdateCategoryAsync_CategoryIsNotNull_UpdateCategory()
         {
             var category = new Category();
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock.Setup(r => r.UpdateAsync(category))
                 .ReturnsAsync(category)
                 .Verifiable();
@@ -108,7 +108,7 @@ namespace Annstore.Services.Tests.Catalog
         [Fact]
         public async Task CreateCategoryAsync_CategoryIsNull_ThrowArgumentNullException()
         {
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.CreateCategoryAsync(null));
         }
@@ -117,7 +117,7 @@ namespace Annstore.Services.Tests.Catalog
         public async Task CreateCategoryAsync_CategoryIsNotNull_InsertCategory()
         {
             var category = new Category();
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock.Setup(r => r.InsertAsync(category))
                 .ReturnsAsync(category)
                 .Verifiable();
@@ -135,7 +135,7 @@ namespace Annstore.Services.Tests.Catalog
         [Fact]
         public async Task DeleteCategoryAsync_CategoryIsNull_ThrowArgumentNullException()
         {
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.DeleteCategoryAsync(null));
         }
@@ -144,9 +144,9 @@ namespace Annstore.Services.Tests.Catalog
         public async Task DeleteCategoryAsync_CategoryIsNotNull_DeleteCategory()
         {
             var category = new Category();
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
-            categoryRepositoryMock.Setup(r => r.UpdateAsync(It.Is<Category>(cat => cat.Deleted)))
-                .ReturnsAsync(category)
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
+            categoryRepositoryMock.Setup(r => r.DeleteAsync(It.IsAny<Category>()))
+                .Returns(Task.CompletedTask)
                 .Verifiable();
             var categoryService = new CategoryService(categoryRepositoryMock.Object);
 
@@ -161,7 +161,7 @@ namespace Annstore.Services.Tests.Catalog
         [Fact]
         public async Task GetCategoryBreadcrumbAsync_CategoryIsNull_ThrowArgumentNullException()
         {
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.GetCategoryBreadcrumbAsync(null, 0, true));
         }
@@ -170,7 +170,7 @@ namespace Annstore.Services.Tests.Catalog
         public async Task GetCategoryBreadcrumbAsync_DeepLevelIsLessThanZeror_ThrowArgumentException()
         {
             var deepLevel = -1;
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             await Assert.ThrowsAsync<ArgumentException>(() => categoryService.GetCategoryBreadcrumbAsync(new Category(), deepLevel, true));
         }
@@ -180,7 +180,7 @@ namespace Annstore.Services.Tests.Catalog
         {
             var category = new Category();
             var deepLevel = 0;
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel, true);
 
@@ -193,7 +193,7 @@ namespace Annstore.Services.Tests.Catalog
         {
             var category = new Category { ParentId = 0 };
             var deepLevel = 1;
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             var categoryBreadcrumb = await categoryService.GetCategoryBreadcrumbAsync(category, deepLevel, true);
 
@@ -210,7 +210,7 @@ namespace Annstore.Services.Tests.Catalog
             category2WithParentIdIs3.ParentId = 3;
             var category3WithParentIdIs0 = Category.CreateWithId(3);
             var deepLevel = 2;
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             var showHidden = true;
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(2))
                 .ReturnsAsync(category2WithParentIdIs3)
@@ -241,7 +241,7 @@ namespace Annstore.Services.Tests.Catalog
             unpublishedCategory3WithParentIdIs0.Published = false;
             var deepLevel = 2;
             var showHidden = false;
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(2))
                 .ReturnsAsync(deletedCategory2WithParentIdIs3)
                 .Verifiable();
@@ -264,7 +264,7 @@ namespace Annstore.Services.Tests.Catalog
             category2WithParentIdIsNotFound.ParentId = notFoundCategoryId;
             var deepLevel = 2;
             var showHidden = true;
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock.Setup(c => c.FindByIdAsync(2))
                 .ReturnsAsync(category2WithParentIdIsNotFound)
                 .Verifiable();
@@ -289,7 +289,7 @@ namespace Annstore.Services.Tests.Catalog
         {
             var pageNumber = 0;
             var showHidden = true;
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             await Assert.ThrowsAsync<ArgumentException>(() => categoryService.GetPagedCategoriesAsync(pageNumber, int.MaxValue, showHidden));
         }
@@ -299,7 +299,7 @@ namespace Annstore.Services.Tests.Catalog
         {
             var pageSize = 0;
             var showHidden = true;
-            var categoryService = new CategoryService(Mock.Of<IRepository<Category>>());
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
 
             await Assert.ThrowsAsync<ArgumentException>(() => categoryService.GetPagedCategoriesAsync(1, pageSize, showHidden));
         }
@@ -316,7 +316,7 @@ namespace Annstore.Services.Tests.Catalog
                 Category.CreateWithId(3), Category.CreateWithId(4),
                 Category.CreateWithId(5), Category.CreateWithId(6)
             };
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCategories.ToAsync())
                 .Verifiable();
@@ -354,7 +354,7 @@ namespace Annstore.Services.Tests.Catalog
                 publishedCategory1, publishedCategory2, publishedCategory3,
                 unpublishedCategory1, unpublishedCategory2, unpublishedCategory3
             };
-            var categoryRepositoryMock = new Mock<IRepository<Category>>();
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
             categoryRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCategories.ToAsync())
                 .Verifiable();
@@ -366,6 +366,70 @@ namespace Annstore.Services.Tests.Catalog
             Assert.Equal(3, result.TotalItems);
             //order by id desc
             Assert.Equal(1, result.Items.ElementAt(0).Id);
+            categoryRepositoryMock.Verify();
+        }
+
+        #endregion
+
+        #region GetChilrenCategoriesAsync
+        [Fact]
+        public async Task GetChilrenCategoriesAsync_CategoryIsNull_ThrowArgumentNullException()
+        {
+            var categoryService = new CategoryService(Mock.Of<ICategoryRepository>());
+            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryService.GetChildrenCategoriesAsync(null));
+        }
+
+        [Fact]
+        public async Task GetChilrenCategoriesAsync_ReturnChildrenCategories()
+        {
+            var parent = Category.CreateWithId(1);
+            var childCategory1 = Category.CreateWithId(2);
+            childCategory1.ParentId = 1;
+            childCategory1.Published = true;
+            var childCategory2 = Category.CreateWithId(3);
+            childCategory2.ParentId = 1;
+            childCategory2.Published = true;
+            var availableCategories = new List<Category>
+            {
+                parent, childCategory1, childCategory2
+            };
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
+            categoryRepositoryMock.Setup(c => c.Table)
+                .Returns(availableCategories.ToAsync())
+                .Verifiable();
+            var categoryService = new CategoryService(categoryRepositoryMock.Object);
+
+            var childrenCategories = await categoryService.GetChildrenCategoriesAsync(parent);
+
+            Assert.Equal(2, childrenCategories.Count);
+            Assert.Equal(childCategory2, childrenCategories[0]);
+            categoryRepositoryMock.Verify();
+        }
+
+        [Fact]
+        public async Task GetChilrenCategoriesAsync_CategoryIsDeletedOrUnPublished_ExcludeFromResult()
+        {
+            var parent = Category.CreateWithId(1);
+            var childCategory1 = Category.CreateWithId(2);
+            childCategory1.ParentId = 1;
+            childCategory1.Published = false;
+            var childCategory2 = Category.CreateWithId(3);
+            childCategory2.ParentId = 1;
+            childCategory2.Published = true;
+            childCategory2.IsDeleted(true);
+            var availableCategories = new List<Category>
+            {
+                parent, childCategory1, childCategory2
+            };
+            var categoryRepositoryMock = new Mock<ICategoryRepository>();
+            categoryRepositoryMock.Setup(c => c.Table)
+                .Returns(availableCategories.ToAsync())
+                .Verifiable();
+            var categoryService = new CategoryService(categoryRepositoryMock.Object);
+
+            var emptyResult = await categoryService.GetChildrenCategoriesAsync(parent);
+
+            Assert.Empty(emptyResult);
             categoryRepositoryMock.Verify();
         }
 

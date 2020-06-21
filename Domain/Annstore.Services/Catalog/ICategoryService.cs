@@ -20,5 +20,7 @@ namespace Annstore.Services.Catalog
         Task DeleteCategoryAsync(Category category);
 
         Task<List<Category>> GetCategoryBreadcrumbAsync(Category category, int deepLevel, bool showHidden = false);
+
+        Task<List<Category>> GetChildrenCategoriesAsync(Category category);
     }
 }

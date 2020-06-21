@@ -154,7 +154,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task EditPost_ErrorResponse_RedisplayViewWithValidModel()
         {
             var customerId = 1;
-            var customer = new Customer { Id = customerId };
+            var customer = Customer.CreateWithId(customerId);
             var model = new CustomerModel { Id = customerId };
             var showHidden = true;
             var errorResponse = AppResponse.ErrorResult<Customer>(string.Empty);
@@ -176,7 +176,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task EditPost_SuccessResponse_RedirectToList()
         {
             var customerId = 1;
-            var customer = new Customer { Id = customerId };
+            var customer = Customer.CreateWithId(customerId);
             var model = new CustomerModel { Id = customerId };
             var successResponse = AppResponse.SuccessResult<Customer>(customer);
             var adminCustomerServiceMock = new Mock<IAdminCustomerService>();
@@ -309,7 +309,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task Delete_ErrorResponse_RedirectToList()
         {
             var customerId = 1;
-            var customer = new Customer { Id = customerId };
+            var customer = Customer.CreateWithId(customerId);
             var errorResponse = AppResponse.ErrorResult<Customer>(string.Empty);
             var adminCustomerServiceMock = new Mock<IAdminCustomerService>();
             adminCustomerServiceMock.Setup(c => c.DeleteCustomerAsync(It.Is<AppRequest<int>>(req => req.Data == customerId)))
@@ -329,7 +329,7 @@ namespace Annstore.Web.Tests.Admin.Controllers
         public async Task Delete_SuccessResponse_RedirectToList()
         {
             var customerId = 1;
-            var customer = new Customer { Id = customerId };
+            var customer = Customer.CreateWithId(customerId);
             var successResponse = AppResponse.SuccessResult<Customer>(customer);
             var adminCustomerServiceMock = new Mock<IAdminCustomerService>();
             adminCustomerServiceMock.Setup(c => c.DeleteCustomerAsync(It.Is<AppRequest<int>>(req => req.Data == customerId)))

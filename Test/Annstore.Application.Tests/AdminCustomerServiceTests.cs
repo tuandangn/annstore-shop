@@ -49,7 +49,8 @@ namespace Annstore.Application.Tests
         public async Task GetCustomerModelAsync_CustomerDeleted_ReturnNullCustomerModel()
         {
             var deletedCustomerId = 1;
-            var deletedCustomer = new Customer { Id = deletedCustomerId, Deleted = true };
+            var deletedCustomer = Customer.CreateWithId(deletedCustomerId);
+            deletedCustomer.IsDeleted(true);
             var customerServiceMock = new Mock<ICustomerService>();
             customerServiceMock.Setup(c => c.GetCustomerByIdAsync(deletedCustomerId))
                 .ReturnsAsync(deletedCustomer)
@@ -66,7 +67,7 @@ namespace Annstore.Application.Tests
         public async Task GetCustomerModelAsync_CustomerNotNull_MapToCustomerModel()
         {
             var id = 1;
-            var customer = new Customer { Id = id };
+            var customer = Customer.CreateWithId(id);
             var model = new CustomerModel { Id = id };
             var mapperMock = new Mock<IMapper>();
             mapperMock.Setup(m => m.Map<CustomerModel>(customer))
@@ -90,7 +91,7 @@ namespace Annstore.Application.Tests
         [Fact]
         public async Task GetCustomerListModelAsync_ReturnMappedAllCategoriesListModel()
         {
-            var customer = new Customer { Id = 1 };
+            var customer = Customer.CreateWithId(1);
             var mappedModel = new CustomerSimpleModel { Id = customer.Id };
             var allCategories = new List<Customer> { customer };
             var customerListOptions = new CustomerListOptions { PageNumber = 1, PageSize = int.MaxValue };
@@ -115,7 +116,7 @@ namespace Annstore.Application.Tests
         [Fact]
         public async Task GetCustomerListModelAsync_Pagination_ReturnPagedCategories()
         {
-            var customer = new Customer { Id = 2 };
+            var customer = Customer.CreateWithId(2);
             var mappedModel = new CustomerSimpleModel { Id = customer.Id };
             var allCategories = new List<Customer> { customer };
             var totalItems = 3;
@@ -208,7 +209,7 @@ namespace Annstore.Application.Tests
         public async Task UpdateCustomerAsync_CustomerIsFound_UpdateCustomer()
         {
             var customerModel = new CustomerModel { Id = 1 };
-            var customer = new Customer { Id = customerModel.Id };
+            var customer = Customer.CreateWithId(customerModel.Id);
             var customerServiceMock = new Mock<ICustomerService>();
             customerServiceMock.Setup(c => c.GetCustomerByIdAsync(customerModel.Id))
                 .ReturnsAsync(customer);
@@ -253,7 +254,8 @@ namespace Annstore.Application.Tests
         public async Task UpdateCustomerAsync_CustomerIsDeleted_ReturnModelInvalidResponse()
         {
             var deletedCustomerId = 1;
-            var deletedCustomer = new Customer { Id = deletedCustomerId, Deleted = true };
+            var deletedCustomer = Customer.CreateWithId(deletedCustomerId);
+            deletedCustomer.IsDeleted(true);
             var customerModel = new CustomerModel { Id = deletedCustomerId };
             var customerServiceMock = new Mock<ICustomerService>();
             customerServiceMock.Setup(c => c.GetCustomerByIdAsync(customerModel.Id))
@@ -273,7 +275,7 @@ namespace Annstore.Application.Tests
         public async Task UpdateCustomerAsync_UpdateCustomerError_ReturnErrorResponse()
         {
             var customerModel = new CustomerModel { Id = 2 };
-            var customer = new Customer { Id = customerModel.Id };
+            var customer = Customer.CreateWithId(customerModel.Id);
             var customerServiceMock = new Mock<ICustomerService>();
             customerServiceMock.Setup(c => c.GetCustomerByIdAsync(customerModel.Id))
                 .ReturnsAsync(customer);
@@ -310,7 +312,7 @@ namespace Annstore.Application.Tests
         {
             var id = 1;
             var customerModel = new CustomerModel { Id = id };
-            var customer = new Customer { Id = customerModel.Id };
+            var customer = Customer.CreateWithId(customerModel.Id);
             var availableAccounts = new List<Account> { new Account { CustomerId = id } };
             var deletedAccountResult = IdentityResult.Success;
             var customerServiceMock = new Mock<ICustomerService>();
@@ -341,11 +343,12 @@ namespace Annstore.Application.Tests
         {
             var deletedCustomerId = 1;
             var customerModel = new CustomerModel { Id = deletedCustomerId };
-            var customer = new Customer { Id = customerModel.Id, Deleted = true };
+            var deletedCustomer = Customer.CreateWithId(deletedCustomerId);
+            deletedCustomer.IsDeleted(true);
             var customerServiceMock = new Mock<ICustomerService>();
             customerServiceMock.Setup(c => c.GetCustomerByIdAsync(customerModel.Id))
-                .ReturnsAsync(customer);
-            customerServiceMock.Setup(c => c.DeleteCustomerAsync(customer))
+                .ReturnsAsync(deletedCustomer);
+            customerServiceMock.Setup(c => c.DeleteCustomerAsync(deletedCustomer))
                 .Returns(Task.CompletedTask);
             var adminCustomerService = new AdminCustomerService(customerServiceMock.Object, GetDefaultUserManager().Object, Mock.Of<IMapper>());
             var appRequest = new AppRequest<int>(deletedCustomerId);
@@ -353,7 +356,7 @@ namespace Annstore.Application.Tests
             var appResponse = await adminCustomerService.DeleteCustomerAsync(appRequest);
 
             Assert.True(appResponse.Success);
-            customerServiceMock.Verify(c => c.DeleteCustomerAsync(customer), Times.Never);
+            customerServiceMock.Verify(c => c.DeleteCustomerAsync(deletedCustomer), Times.Never);
         }
 
         [Fact]
@@ -380,7 +383,7 @@ namespace Annstore.Application.Tests
         {
             var id = 2;
             var customerModel = new CustomerModel { Id = id };
-            var customer = new Customer { Id = customerModel.Id };
+            var customer = Customer.CreateWithId(customerModel.Id);
             var customerServiceMock = new Mock<ICustomerService>();
             customerServiceMock.Setup(c => c.GetCustomerByIdAsync(customerModel.Id))
                 .ReturnsAsync(customer);

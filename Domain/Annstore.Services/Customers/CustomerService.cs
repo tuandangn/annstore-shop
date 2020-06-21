@@ -6,14 +6,15 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Annstore.Core.Common;
+using Annstore.Data.Customers;
 
 namespace Annstore.Services.Customers
 {
     public sealed class CustomerService : ICustomerService
     {
-        private readonly IRepository<Customer> _customerRepository;
+        private readonly ICustomerRepository  _customerRepository;
 
-        public CustomerService(IRepository<Customer> customerRepository)
+        public CustomerService(ICustomerRepository customerRepository)
         {
             _customerRepository = customerRepository;
         }
@@ -34,8 +35,7 @@ namespace Annstore.Services.Customers
             if (customer == null)
                 throw new ArgumentNullException(nameof(customer));
 
-            customer.Deleted = true;
-            await _customerRepository.UpdateAsync(customer)
+            await _customerRepository.DeleteAsync(customer)
                 .ConfigureAwait(false);
         }
 

@@ -1,6 +1,4 @@
-﻿using Annstore.Auth.Entities;
-using Annstore.Auth.Services;
-using Annstore.Core.Entities.Customers;
+﻿using Annstore.Core.Entities.Customers;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using System;
@@ -9,6 +7,8 @@ using System.Threading.Tasks;
 using Xunit;
 using TestHelper;
 using System.Linq;
+using Annstore.Auth.Entities;
+using Annstore.Auth.Services;
 
 namespace Annstore.Auth.Tests
 {
@@ -35,7 +35,7 @@ namespace Annstore.Auth.Tests
         [Fact]
         public async Task GetAccountsOfCustomerAsync_CustomerNotNull_ReturnAccountsOfCustomer()
         {
-            var customer = new Customer { Id = 1 };
+            var customer = Customer.CreateWithId(1);
             var availableAccounts = new List<Account> { new Account { Id = 1, CustomerId = 1 }, new Account { Id = 2, CustomerId = 1 } };
             var userManagerMock = GetDefaultUserManager();
             userManagerMock.Setup(u => u.Users)

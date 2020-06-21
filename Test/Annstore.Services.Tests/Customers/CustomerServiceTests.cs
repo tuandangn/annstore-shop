@@ -1,5 +1,4 @@
 ﻿using Annstore.Core.Entities.Customers;
-using Annstore.Data;
 using Moq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using TestHelper;
 using Annstore.Services.Customers;
 using System;
 using System.Linq;
+using Annstore.Data.Customers;
 
 namespace Annstore.Services.Tests.Customers
 {
@@ -17,8 +17,8 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task GetCustomersAsync_ReturnAllCustomers()
         {
-            var availableCustomers = new List<Customer> { new Customer { Id = 1 } };
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
+            var availableCustomers = new List<Customer> { Customer.CreateWithId(1) };
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
             customerRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCustomers.ToAsync())
                 .Verifiable();
@@ -34,8 +34,10 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task GetCustomersAsync_ExcludeDeletedCustomer()
         {
-            var availableCustomers = new List<Customer> { new Customer { Id = 1, Deleted = true } };
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
+            var deletedCustomer = Customer.CreateWithId(1);
+            deletedCustomer.IsDeleted(true);
+            var availableCustomers = new List<Customer> { deletedCustomer };
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
             customerRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCustomers.ToAsync())
                 .Verifiable();
@@ -53,7 +55,7 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task CreateCustomerAsync_CustomerIsNull_ThrowArgumentNullException()
         {
-            var customerService = new CustomerService(Mock.Of<IRepository<Customer>>());
+            var customerService = new CustomerService(Mock.Of<ICustomerRepository>());
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => customerService.CreateCustomerAsync(null));
         }
@@ -61,8 +63,9 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task CreateCustomerAsync_CustomerIsNotNull_InsertCustomer()
         {
-            var customer = new Customer { Id = 1, FullName = "full name" };
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
+            var customer = Customer.CreateWithId(1);
+            customer.FullName = "full name";
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
             customerRepositoryMock.Setup(c => c.InsertAsync(customer))
                 .ReturnsAsync(customer)
                 .Verifiable();
@@ -80,7 +83,7 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task UpdateCustomerAsync_CustomerIsNull_ThrowArgumentNullException()
         {
-            var customerService = new CustomerService(Mock.Of<IRepository<Customer>>());
+            var customerService = new CustomerService(Mock.Of<ICustomerRepository>());
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => customerService.UpdateCustomerAsync(null));
         }
@@ -88,8 +91,9 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task UpdateCustomerAsync_CustomerIsNotNull_UpdateCustomer()
         {
-            var customer = new Customer { Id = 1, FullName = "full name" };
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
+            var customer = Customer.CreateWithId(1);
+            customer.FullName = "full name";
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
             customerRepositoryMock.Setup(c => c.UpdateAsync(customer))
                 .ReturnsAsync(customer)
                 .Verifiable();
@@ -107,7 +111,7 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task DeleteCustomerAsync_CustomerIsNull_ThrowArgumentNullException()
         {
-            var customerService = new CustomerService(Mock.Of<IRepository<Customer>>());
+            var customerService = new CustomerService(Mock.Of<ICustomerRepository>());
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => customerService.DeleteCustomerAsync(null));
         }
@@ -115,10 +119,11 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task DeleteCustomerAsync_CustomerIsNotNull_DeleteCustomer()
         {
-            var customer = new Customer { Id = 1, FullName = "full name" };
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
-            customerRepositoryMock.Setup(c => c.UpdateAsync(It.Is<Customer>(cust => cust.Deleted)))
-                .ReturnsAsync(customer)
+            var customer = Customer.CreateWithId(1);
+            customer.FullName = "full name";
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
+            customerRepositoryMock.Setup(c => c.DeleteAsync(It.IsAny<Customer>()))
+                .Returns(Task.CompletedTask)
                 .Verifiable();
             var customerService = new CustomerService(customerRepositoryMock.Object);
 
@@ -134,7 +139,7 @@ namespace Annstore.Services.Tests.Customers
         public async Task GetPagedCustomersAsync_PageNumberLessThanOne_ThrowArgumentException()
         {
             var pageNumber = 0;
-            var customerService = new CustomerService(Mock.Of<IRepository<Customer>>());
+            var customerService = new CustomerService(Mock.Of<ICustomerRepository>());
 
             await Assert.ThrowsAsync<ArgumentException>(() => customerService.GetPagedCustomersAsync(pageNumber, int.MaxValue));
         }
@@ -143,7 +148,7 @@ namespace Annstore.Services.Tests.Customers
         public async Task GetPagedCustomersAsync_PageSizeLessThanOrEqualZero_ThrowArgumentException()
         {
             var pageSize = 0;
-            var customerService = new CustomerService(Mock.Of<IRepository<Customer>>());
+            var customerService = new CustomerService(Mock.Of<ICustomerRepository>());
 
             await Assert.ThrowsAsync<ArgumentException>(() => customerService.GetPagedCustomersAsync(1, pageSize));
         }
@@ -155,11 +160,11 @@ namespace Annstore.Services.Tests.Customers
             var pageSize = 2;
             var availableCustomers = new List<Customer>
             {
-                new Customer{Id = 1 }, new Customer{Id = 2 },
-                new Customer{Id = 3 }, new Customer{Id = 4 },
-                new Customer{Id = 5 }, new Customer{Id = 6 }
+                Customer.CreateWithId(1), Customer.CreateWithId(2),
+                Customer.CreateWithId(3), Customer.CreateWithId(4),
+                Customer.CreateWithId(5), Customer.CreateWithId(6)
             };
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
             customerRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCustomers.ToAsync())
                 .Verifiable();
@@ -181,8 +186,8 @@ namespace Annstore.Services.Tests.Customers
         public async Task GetCustomerByIdAsync_ReturnCustomer()
         {
             var id = 1;
-            var customer = new Customer { Id = id };
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
+            var customer = Customer.CreateWithId(id);
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
             customerRepositoryMock.Setup(c => c.FindByIdAsync(id))
                 .ReturnsAsync(customer)
                 .Verifiable();
@@ -201,7 +206,7 @@ namespace Annstore.Services.Tests.Customers
         public async Task HasCustomersAsync()
         {
             var availableCustomer = new List<Customer>();
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
             customerRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCustomer.ToAsync())
                 .Verifiable();
@@ -216,8 +221,10 @@ namespace Annstore.Services.Tests.Customers
         [Fact]
         public async Task HasCustomersAsync_ExcludeDeletedCustomer()
         {
-            var availableCustomer = new List<Customer> { new Customer { Deleted = true } };
-            var customerRepositoryMock = new Mock<IRepository<Customer>>();
+            var deletedCustomer = Customer.CreateWithId(1);
+            deletedCustomer.IsDeleted(true);
+            var availableCustomer = new List<Customer> { deletedCustomer };
+            var customerRepositoryMock = new Mock<ICustomerRepository>();
             customerRepositoryMock.Setup(c => c.Table)
                 .Returns(availableCustomer.ToAsync())
                 .Verifiable();

@@ -54,7 +54,8 @@ namespace Annstore.Application.Tests
         [Fact]
         public async Task GetAccountListModelAsync_ReturnAllMappedAccountSimpleModels()
         {
-            var customer = new Customer { Id = 99, FullName = "customer" };
+            var customer = Customer.CreateWithId(99);
+            customer.FullName = "customer";
             var account = new Account { Id = 1, CustomerId = customer.Id };
             var mappedAccountModel = new AccountSimpleModel { Id = account.Id };
             var mappedCustomerModel = new CustomerSimpleModel { Id = customer.Id, FullName = customer.FullName };
@@ -112,7 +113,8 @@ namespace Annstore.Application.Tests
         public async Task GetAccountListModelAsync_CustomerIsDeleted_ThrowException()
         {
             var deletedCustomerId = 0;
-            var deletedCustomer = new Customer { Id = deletedCustomerId, Deleted = true };
+            var deletedCustomer = Customer.CreateWithId(deletedCustomerId);
+            deletedCustomer.IsDeleted(true);
             var account = new Account { Id = 1, CustomerId = deletedCustomerId };
             var accountListOptions = new AccountListOptions { PageNumber = 1, PageSize = int.MaxValue };
             var pagedAccounts = (new List<Account> { account }).ToPagedList(accountListOptions.PageSize, accountListOptions.PageNumber, 1);
@@ -314,7 +316,7 @@ namespace Annstore.Application.Tests
             var accountId = 1;
             var account = new Account { Id = accountId };
             var accountModel = new AccountModel { Id = accountId };
-            var allCustomers = new List<Customer> { new Customer { Id = 1 }, new Customer { Id = 2 } };
+            var allCustomers = new List<Customer> { Customer.CreateWithId(1), Customer.CreateWithId(2) };
             var mappedCustomers = new List<CustomerSimpleModel> { new CustomerSimpleModel { Id = 1 }, new CustomerSimpleModel { Id = 2 } };
             var accountManagerMock = GetDefaultUserManager();
             accountManagerMock.Setup(u => u.FindByIdAsync(accountId.ToString()))
@@ -480,7 +482,7 @@ namespace Annstore.Application.Tests
         public async Task PrepareCustomersForAccountAsync_ModelIsNotNull_IncludeMappedAllCustomers()
         {
             var model = new AccountModel();
-            var availableCustomers = new List<Customer> { new Customer { Id = 1 }, new Customer { Id = 2 } };
+            var availableCustomers = new List<Customer> { Customer.CreateWithId(1), Customer.CreateWithId(2) };
             var mappedCustomers = new List<CustomerSimpleModel> { new CustomerSimpleModel { Id = 1 }, new CustomerSimpleModel { Id = 2 } };
             var customerServiceMock = new Mock<ICustomerService>();
             customerServiceMock.Setup(c => c.GetCustomersAsync())
@@ -510,7 +512,7 @@ namespace Annstore.Application.Tests
         [Fact]
         public async Task HasCustomersAsync()
         {
-            var availableCustomers = new List<Customer> { new Customer { Id = 1 } };
+            var availableCustomers = new List<Customer> { Customer.CreateWithId(1) };
             var customerServiceMock = new Mock<ICustomerService>();
             customerServiceMock.Setup(c => c.HasCustomersAsync())
                 .ReturnsAsync(availableCustomers.Count > 0)

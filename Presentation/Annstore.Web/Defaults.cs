@@ -8,6 +8,8 @@
         {
             public const string Data = "AnnstoreDb";
 
+            public const string QueryData = "QueryAnnstoreDb";
+
             public const string Auth = "AnnstoreAuth";
         }
     }

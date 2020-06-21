@@ -15,6 +15,7 @@ namespace Annstore.Web.Migrations.AnnstoreAuthDb
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("auth")
                 .HasAnnotation("ProductVersion", "3.1.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -86,7 +87,7 @@ namespace Annstore.Web.Migrations.AnnstoreAuthDb
                         .HasName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("AspNetUsers");
+                    b.ToTable("Account");
                 });
 
             modelBuilder.Entity("Annstore.Auth.Entities.Role", b =>
@@ -115,7 +116,7 @@ namespace Annstore.Web.Migrations.AnnstoreAuthDb
                         .HasName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("AspNetRoles");
+                    b.ToTable("Role");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

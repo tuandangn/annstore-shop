@@ -47,7 +47,7 @@ namespace Annstore.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Category");
+                    b.ToTable("Category","dm");
                 });
 
             modelBuilder.Entity("Annstore.Core.Entities.Customers.Customer", b =>
@@ -65,7 +65,7 @@ namespace Annstore.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customer");
+                    b.ToTable("Customer","dm");
                 });
 #pragma warning restore 612, 618
         }

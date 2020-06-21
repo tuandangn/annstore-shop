@@ -19,6 +19,18 @@ using Annstore.Application.Mappings;
 using Annstore.Services.Customers;
 using Annstore.Application.Infrastructure.Settings;
 using Annstore.Auth.Services;
+using Annstore.Query;
+using Annstore.Core.Events;
+using Annstore.Services.Events;
+using Annstore.Core.Common;
+using Annstore.Data.Catalog;
+using Annstore.Data.Customers;
+using Microsoft.Extensions.Options;
+using Annstore.Query.Infrastructure;
+using Annstore.DataMixture.Events;
+using Annstore.DataMixture.Services.Catalog;
+using Annstore.DataMixture;
+using Annstore.DataMixture.Mappings;
 
 namespace Annstore.Web
 {
@@ -44,6 +56,16 @@ namespace Annstore.Web
                 opts => opts.UseSqlServer(_configuration.GetConnectionString(Defaults.ConnectionStrings.Auth),
                 sqlOpts => sqlOpts.MigrationsAssembly(migrationAssemblyName)));
 
+            //query
+            services.AddSingleton<IQueryDbSettings>(sp =>
+                sp.GetRequiredService<IOptions<QueryDbSettings>>().Value);
+            services.AddScoped<IQueryDbContext, AnnstoreQueryDbContext>();
+            services.AddTransient(typeof(IQueryRepository<>), typeof(QueryRepository<>));
+
+            //mix
+            services.AddScoped(typeof(IMixRepository<>), typeof(MixRepository<>));
+            services.AddTransient<IMixCategoryService, MixCategoryService>();
+
             //identity
             services.AddIdentity<Account, Role>()
                 .AddEntityFrameworkStores<AnnstoreAuthDbContext>()
@@ -51,7 +73,10 @@ namespace Annstore.Web
 
             //services
             services.AddScoped<IDbContext, AnnstoreDbContext>();
-            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IQueryDbContext, AnnstoreQueryDbContext>();
+            services.AddTransient(typeof(IRepository<>), typeof(RepositoryBase<>));
+            services.AddTransient<ICategoryRepository, CategoryRepository>();
+            services.AddTransient<ICustomerRepository, CustomerRepository>();
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<ICustomerService, CustomerService>();
             services.AddTransient<IAdminCategoryService, AdminCategoryService>();
@@ -64,6 +89,7 @@ namespace Annstore.Web
             var mapperConfiguration = new MapperConfiguration(mc =>
             {
                 mc.AddProfile<AdminModelProfile>();
+                mc.AddProfile<MixDataProfile>();
             });
             var mapper = mapperConfiguration.CreateMapper();
             services.AddSingleton(mapper);
@@ -76,6 +102,17 @@ namespace Annstore.Web
                     opts.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
                 });
 
+            //helpers
+            var assemblyHelper = new AssemblyHelper();
+            services.AddSingleton<IAssemblyHelper>(assemblyHelper);
+            services.AddSingleton<IStringHelper, StringHelper>();
+
+            //event
+            services.AddScoped<IEventPublisher, EventPublisher>();
+            services.AddScoped<DefaultEventHandler>();
+            services.AddScoped<MixDataEventHandler>();
+            EventPublisher.RegisterEventHandlers(assemblyHelper.GetAnnstoreAssemblies());
+
             //settings
             var categorySettingsSection = _configuration.GetSection("CategorySettings");
             services.Configure<CategorySettings>(categorySettingsSection);
@@ -85,6 +122,9 @@ namespace Annstore.Web
 
             var customerSettingsSection = _configuration.GetSection("CustomerSettings");
             services.Configure<CustomerSettings>(customerSettingsSection);
+
+            var queryDbSettingsSection = _configuration.GetSection("QueryDbSettings");
+            services.Configure<QueryDbSettings>(queryDbSettingsSection);
 
             services.Configure<IdentityOptions>(options =>
             {
@@ -101,8 +141,7 @@ namespace Annstore.Web
                 options.Lockout.AllowedForNewUsers = true;
 
                 // User settings.
-                options.User.AllowedUserNameCharacters =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = false;
             });
 

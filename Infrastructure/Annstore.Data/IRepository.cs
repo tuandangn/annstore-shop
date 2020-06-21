@@ -1,11 +1,10 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Annstore.Core;
-using Microsoft.EntityFrameworkCore;
 
 namespace Annstore.Data
 {
-    public interface IRepository<T> where T : BaseEntity
+    public interface IRepository<T> where T : class, IAggregateRoot
     {
         IQueryable<T> Table { get; }
 

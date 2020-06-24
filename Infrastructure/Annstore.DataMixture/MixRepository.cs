@@ -31,30 +31,39 @@ namespace Annstore.DataMixture
 
         public async Task DeleteAsync(TEntity entity)
         {
-            await _collection.DeleteOneAsync(item => item.Id == entity.Id).ConfigureAwait(false);
+            await _collection.DeleteOneAsync(item => item.Id == entity.Id)
+                .ConfigureAwait(false);
         }
 
         public async Task<TEntity> FindByIdAsync(string id)
         {
-            var findResult = await _collection.FindAsync(entity => entity.Id == id).ConfigureAwait(false);
-            return await findResult.FirstOrDefaultAsync().ConfigureAwait(false);
+            var findResult = await _collection.FindAsync(entity => entity.Id == id)
+                .ConfigureAwait(false);
+            return await findResult.FirstOrDefaultAsync()
+                .ConfigureAwait(false);
         }
 
         public async Task<TEntity> InsertAsync(TEntity entity)
         {
-            await _collection.InsertOneAsync(entity);
+            await _collection.InsertOneAsync(entity)
+                .ConfigureAwait(false);
             return entity;
         }
 
-        public Task<TEntity> UpdateAsync(TEntity entity)
+        public async Task<TEntity> UpdateAsync(TEntity entity)
         {
-            return _collection.FindOneAndReplaceAsync(item => item.Id == entity.Id, entity);
+            var result = await _collection.FindOneAndReplaceAsync(item => item.Id == entity.Id, entity)
+                .ConfigureAwait(false);
+
+            return result;
         }
 
         public async Task<TEntity> FindByEntityIdAsync(int entityId)
         {
-            var findResult = await _collection.FindAsync(entity => entity.EntityId == entityId).ConfigureAwait(false);
-            return await findResult.FirstOrDefaultAsync().ConfigureAwait(false);
+            var findResult = await _collection.FindAsync(entity => entity.EntityId == entityId)
+                .ConfigureAwait(false);
+            return await findResult.FirstOrDefaultAsync()
+                .ConfigureAwait(false);
         }
     }
 }

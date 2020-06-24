@@ -31,6 +31,7 @@ using Annstore.DataMixture.Events;
 using Annstore.DataMixture.Services.Catalog;
 using Annstore.DataMixture;
 using Annstore.DataMixture.Mappings;
+using Annstore.DataMixture.DataMixtures;
 
 namespace Annstore.Web
 {
@@ -65,6 +66,8 @@ namespace Annstore.Web
             //mix
             services.AddScoped(typeof(IMixRepository<>), typeof(MixRepository<>));
             services.AddTransient<IMixCategoryService, MixCategoryService>();
+            services.AddScoped<ICategoryDataMixturer, CategoryDataMixturer>();
+            services.AddScoped<ICategoryDataDependencyResolver, CategoryDataDependencyResolver>();
 
             //identity
             services.AddIdentity<Account, Role>()
@@ -110,7 +113,8 @@ namespace Annstore.Web
             //event
             services.AddScoped<IEventPublisher, EventPublisher>();
             services.AddScoped<DefaultEventHandler>();
-            services.AddScoped<MixDataEventHandler>();
+            services.AddScoped<DomainCategoryEventHandler>();
+            services.AddScoped<MixCategoryEventHandler>();
             EventPublisher.RegisterEventHandlers(assemblyHelper.GetAnnstoreAssemblies());
 
             //settings

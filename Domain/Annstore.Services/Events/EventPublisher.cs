@@ -46,7 +46,7 @@ namespace Annstore.Services.Events
         public async Task PublishAsync<TMessage>(TMessage message) where TMessage : Message
         {
             var targetHandlerType = typeof(IEventHandler<TMessage>);
-            foreach(var handlerType in _handlerTypes)
+            foreach (var handlerType in _handlerTypes)
             {
                 if (!targetHandlerType.IsAssignableFrom(handlerType))
                     continue;

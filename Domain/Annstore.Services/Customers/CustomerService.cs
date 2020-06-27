@@ -41,7 +41,8 @@ namespace Annstore.Services.Customers
 
         public async Task<Customer> GetCustomerByIdAsync(int id)
         {
-            var customer = await _customerRepository.FindByIdAsync(id);
+            var customer = await _customerRepository.FindByIdAsync(id)
+                .ConfigureAwait(false);
 
             return customer;
         }

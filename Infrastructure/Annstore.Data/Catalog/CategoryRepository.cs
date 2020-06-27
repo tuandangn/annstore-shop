@@ -16,9 +16,12 @@ namespace Annstore.Data.Catalog
         public override async Task DeleteAsync(Category entity)
         {
             entity.IsDeleted(true);
-            await UpdateAsync(entity);
 
-            await _eventPublisher.EntityDeleted(entity);
+            await UpdateAsync(entity)
+                .ConfigureAwait(false);
+
+            await _eventPublisher.EntityDeleted(entity)
+                .ConfigureAwait(false);
         }
     }
 }

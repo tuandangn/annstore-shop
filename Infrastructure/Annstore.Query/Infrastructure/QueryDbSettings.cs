@@ -1,5 +1,8 @@
-﻿namespace Annstore.Query.Infrastructure
+﻿using System;
+
+namespace Annstore.Query.Infrastructure
 {
+    [Serializable]
     public sealed class QueryDbSettings : IQueryDbSettings
     {
         public string ConnectionString { get; set; }

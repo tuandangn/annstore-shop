@@ -22,7 +22,8 @@ namespace Annstore.Application.Services.Customers
         private readonly IAccountService _accountService;
         private readonly IMapper _mapper;
 
-        public AdminAccountService(UserManager<Account> userManager, IAccountService accountService, ICustomerService customerService, IMapper mapper)
+        public AdminAccountService(UserManager<Account> userManager, IAccountService accountService,
+            ICustomerService customerService, IMapper mapper)
         {
             _userManager = userManager;
             _customerService = customerService;
@@ -36,11 +37,13 @@ namespace Annstore.Application.Services.Customers
                 throw new ArgumentNullException(nameof(request));
 
             var account = _mapper.Map<Account>(request.Data);
-            var insertResult = await _userManager.CreateAsync(account).ConfigureAwait(false);
+            var insertResult = await _userManager.CreateAsync(account)
+                .ConfigureAwait(false);
 
             if (insertResult.Succeeded)
             {
-                var addPasswordResult = await _userManager.AddPasswordAsync(account, request.Data.Password).ConfigureAwait(false);
+                var addPasswordResult = await _userManager.AddPasswordAsync(account, request.Data.Password)
+                    .ConfigureAwait(false);
 
                 if (addPasswordResult.Succeeded)
                     return AppResponse.SuccessResult(account);
@@ -53,11 +56,13 @@ namespace Annstore.Application.Services.Customers
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var account = await _userManager.FindByIdAsync(request.Data.ToString()).ConfigureAwait(false);
+            var account = await _userManager.FindByIdAsync(request.Data.ToString())
+                .ConfigureAwait(false);
             if (account == null)
                 return AppResponse.InvalidModelResult(AdminMessages.Account.AccountIsNotFound);
 
-            var deleteResult = await _userManager.DeleteAsync(account).ConfigureAwait(false);
+            var deleteResult = await _userManager.DeleteAsync(account)
+                .ConfigureAwait(false);
 
             if (deleteResult.Succeeded)
                 return AppResponse.SuccessResult();
@@ -71,11 +76,13 @@ namespace Annstore.Application.Services.Customers
             if (opts.PageSize <= 0)
                 throw new ArgumentException("Page size must greater than 0");
 
-            var pagedAccounts = await _accountService.GetPagedAccountsAsync(opts.PageNumber, opts.PageSize); 
+            var pagedAccounts = await _accountService.GetPagedAccountsAsync(opts.PageNumber, opts.PageSize)
+                .ConfigureAwait(false);
             var accountModels = new List<AccountSimpleModel>();
             foreach (var account in pagedAccounts)
             {
-                var customer = await _customerService.GetCustomerByIdAsync(account.CustomerId);
+                var customer = await _customerService.GetCustomerByIdAsync(account.CustomerId)
+                    .ConfigureAwait(false);
                 if (customer == null || customer.Deleted)
                     throw new Exception(AdminMessages.Customer.CustomerIsNotFound);
                 var accountModel = _mapper.Map<AccountSimpleModel>(account);
@@ -133,20 +140,24 @@ namespace Annstore.Application.Services.Customers
                 throw new ArgumentNullException(nameof(request));
 
             var model = request.Data;
-            var account = await _userManager.FindByIdAsync(model.Id.ToString()).ConfigureAwait(false);
+            var account = await _userManager.FindByIdAsync(model.Id.ToString())
+                .ConfigureAwait(false);
             if (account == null)
                 return AppResponse.InvalidModelResult<Account>(AdminMessages.Account.AccountIsNotFound);
             account = _mapper.Map(model, account);
-            var updateResult = await _userManager.UpdateAsync(account).ConfigureAwait(false);
+            var updateResult = await _userManager.UpdateAsync(account)
+                .ConfigureAwait(false);
 
             if (updateResult.Succeeded)
             {
                 if (!string.IsNullOrEmpty(model.Password))
                 {
-                    var removePasswordResult = await _userManager.RemovePasswordAsync(account).ConfigureAwait(false);
+                    var removePasswordResult = await _userManager.RemovePasswordAsync(account)
+                        .ConfigureAwait(false);
                     if (removePasswordResult.Succeeded)
                     {
-                        var addPasswordResult = await _userManager.AddPasswordAsync(account, model.Password).ConfigureAwait(false);
+                        var addPasswordResult = await _userManager.AddPasswordAsync(account, model.Password)
+                            .ConfigureAwait(false);
                         if (addPasswordResult.Succeeded)
                         {
                             return AppResponse.SuccessResult(account);

@@ -2,6 +2,8 @@
 using Annstore.DataMixture.Services.Catalog;
 using Moq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using MixCategory = Annstore.Query.Entities.Catalog.Category;
@@ -10,6 +12,25 @@ namespace Annstore.DataMixture.Tests.Services
 {
     public class MixCategoryServiceTests
     {
+        #region GetAllMixCategories
+        [Fact]
+        public void GetAllMixCategories()
+        {
+            var availableMixCategories = new List<MixCategory> { new MixCategory { Name = "mix category 1" } };
+            var mixCategoryRepositoryMock = new Mock<IMixRepository<MixCategory>>();
+            mixCategoryRepositoryMock.Setup(m => m.GetAll())
+                .Returns(availableMixCategories.AsQueryable())
+                .Verifiable();
+            var mixCategoryService = new MixCategoryService(mixCategoryRepositoryMock.Object, Mock.Of<IEventPublisher>());
+
+            var result = mixCategoryService.GetAllMixCategories();
+
+            Assert.Equal(availableMixCategories[0], result.FirstOrDefault());
+            mixCategoryRepositoryMock.Verify();
+        }
+
+        #endregion
+
         #region GetMixCategoryByEntityIdAsync
         [Fact]
         public async Task GetMixCategoryByEntityIdAsync()

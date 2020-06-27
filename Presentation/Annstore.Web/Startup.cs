@@ -32,6 +32,7 @@ using Annstore.DataMixture.Services.Catalog;
 using Annstore.DataMixture;
 using Annstore.DataMixture.Mappings;
 using Annstore.DataMixture.DataMixtures;
+using Annstore.Framework.Events;
 
 namespace Annstore.Web
 {
@@ -115,7 +116,7 @@ namespace Annstore.Web
             services.AddScoped<DefaultEventHandler>();
             services.AddScoped<DomainCategoryEventHandler>();
             services.AddScoped<MixCategoryEventHandler>();
-            EventPublisher.RegisterEventHandlers(assemblyHelper.GetAnnstoreAssemblies());
+            EventPublisher.RegisterEventHandlers(assemblyHelper.GetAppOwnAssemblies());
 
             //settings
             var categorySettingsSection = _configuration.GetSection("CategorySettings");

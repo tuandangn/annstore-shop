@@ -26,13 +26,15 @@ namespace Annstore.Application.Services.Customers
                 throw new ArgumentNullException(nameof(request));
 
             var loginModel = request.Data;
-            var user = await _userManager.FindByEmailAsync(loginModel.Email).ConfigureAwait(false);
+            var user = await _userManager.FindByEmailAsync(loginModel.Email)
+                .ConfigureAwait(false);
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginModel.Password))
                 return AppResponse.ErrorResult<Account>(PublicMessages.User.AccountOrPasswordIsIncorrect);
 
             //*TODO*
             var lockOnFailure = false;
-            var signInResult = await _signInManager.PasswordSignInAsync(user, loginModel.Password, loginModel.Remember, lockOnFailure).ConfigureAwait(false);
+            var signInResult = await _signInManager.PasswordSignInAsync(user, loginModel.Password, loginModel.Remember, lockOnFailure)
+                .ConfigureAwait(false);
 
             if (signInResult.Succeeded)
                 return AppResponse.SuccessResult(user);

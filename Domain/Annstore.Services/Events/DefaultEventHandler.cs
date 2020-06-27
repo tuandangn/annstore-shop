@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Annstore.Services.Events
 {
-    public class DefaultEventHandler :
+    public sealed class DefaultEventHandler :
         IEventHandler<EntityCreatedEvent<Category>>,
         IEventHandler<EntityDeletedEvent<Category>>,
         IEventHandler<EntityUpdatedEvent<Category>>,
@@ -18,6 +18,7 @@ namespace Annstore.Services.Events
         {
 
         }
+
         public Task HandleAsync(EntityCreatedEvent<Category> targetEvent)
         {
             return Task.CompletedTask;

@@ -1,11 +1,12 @@
 ﻿using Annstore.Core.Events;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MixCategory = Annstore.Query.Entities.Catalog.Category;
 
 namespace Annstore.DataMixture.Services.Catalog
 {
-    public class MixCategoryService : IMixCategoryService
+    public sealed class MixCategoryService : IMixCategoryService
     {
         private readonly IMixRepository<MixCategory> _mixCategoryRepository;
         private readonly IEventPublisher _eventPublisher;
@@ -60,5 +61,9 @@ namespace Annstore.DataMixture.Services.Catalog
             return category;
         }
 
+        public IQueryable<MixCategory> GetAllMixCategories()
+        {
+            return _mixCategoryRepository.GetAll();
+        }
     }
 }

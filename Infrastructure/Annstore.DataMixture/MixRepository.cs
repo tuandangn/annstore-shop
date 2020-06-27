@@ -1,6 +1,7 @@
 ﻿using Annstore.Query;
 using Annstore.Query.Infrastructure;
 using MongoDB.Driver;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Annstore.DataMixture
@@ -64,6 +65,11 @@ namespace Annstore.DataMixture
                 .ConfigureAwait(false);
             return await findResult.FirstOrDefaultAsync()
                 .ConfigureAwait(false);
+        }
+
+        public IQueryable<TEntity> GetAll()
+        {
+            return _collection.AsQueryable();
         }
     }
 }

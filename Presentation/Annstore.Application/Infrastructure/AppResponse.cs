@@ -2,6 +2,7 @@
 
 namespace Annstore.Application.Infrastructure
 {
+    [Serializable]
     public class AppResponse
     {
         public bool Success { get; set; }

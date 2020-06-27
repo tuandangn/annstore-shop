@@ -1,5 +1,8 @@
-﻿namespace Annstore.Core.Entities.Customers
+﻿using System;
+
+namespace Annstore.Core.Entities.Customers
 {
+    [Serializable]
     public sealed class Customer : BaseEntity, IAggregateRoot, IHideableEntity
     {
         private bool _deleted;

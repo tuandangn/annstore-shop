@@ -75,7 +75,8 @@ namespace Annstore.Application.Services.Categories
             try
             {
                 var customer = _mapper.Map<Customer>(request.Data);
-                await _customerService.CreateCustomerAsync(customer).ConfigureAwait(false);
+                await _customerService.CreateCustomerAsync(customer)
+                    .ConfigureAwait(false);
                 return AppResponse.SuccessResult(customer);
             }
             catch (Exception ex)
@@ -98,7 +99,8 @@ namespace Annstore.Application.Services.Categories
             try
             {
                 customer = _mapper.Map(request.Data, customer);
-                await _customerService.UpdateCustomerAsync(customer).ConfigureAwait(false);
+                await _customerService.UpdateCustomerAsync(customer)
+                    .ConfigureAwait(false);
 
                 return AppResponse.SuccessResult(customer);
             }
@@ -114,7 +116,8 @@ namespace Annstore.Application.Services.Categories
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var customer = await _customerService.GetCustomerByIdAsync(request.Data).ConfigureAwait(false);
+            var customer = await _customerService.GetCustomerByIdAsync(request.Data)
+                .ConfigureAwait(false);
             if (customer == null)
                 return AppResponse.InvalidModelResult(AdminMessages.Customer.CustomerIsNotFound);
 

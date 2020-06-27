@@ -30,9 +30,6 @@ namespace Annstore.DataMixture.Tests.DataMixtures
             categoryDataDependencyResolverMock.Setup(m => m.CreateMixCategoryForCategoryAsync(createdCategory))
                 .ReturnsAsync(expectedResult)
                 .Verifiable();
-            categoryDataDependencyResolverMock.Setup(m => m.UpdateChildrenOfMixParentCategoryAsync(createdCategory))
-                 .Returns(Task.CompletedTask)
-                 .Verifiable();
             var categoryDataMixturer = new CategoryDataMixturer(categoryDataDependencyResolverMock.Object);
 
             var result = await categoryDataMixturer.ApplyForCreatedCategoryAsync(createdCategory);
@@ -74,7 +71,7 @@ namespace Annstore.DataMixture.Tests.DataMixtures
             categoryDataDependencyResolverMock.Setup(c => c.DeleteMixCategoryForCategoryAsync(deletedCategory))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
-            categoryDataDependencyResolverMock.Setup(c => c.UpdateChildrenOfMixParentCategoryAsync(deletedCategory))
+            categoryDataDependencyResolverMock.Setup(c => c.UpdateBreadcrumbsOfCategoryAsync(deletedCategory))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
             var categoryDataMixturer = new CategoryDataMixturer(categoryDataDependencyResolverMock.Object);
@@ -106,7 +103,7 @@ namespace Annstore.DataMixture.Tests.DataMixtures
             categoryDataDependencyResolverMock.Setup(c => c.UpdateMixCategoryForCategoryAsync(updatedCategory))
                 .ReturnsAsync(expectedResult)
                 .Verifiable();
-            categoryDataDependencyResolverMock.Setup(c => c.UpdateChildrenOfMixParentCategoryAsync(updatedCategory))
+            categoryDataDependencyResolverMock.Setup(c => c.UpdateBreadcrumbsOfCategoryAsync(updatedCategory))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
             var categoryDataMixturer = new CategoryDataMixturer(categoryDataDependencyResolverMock.Object);
@@ -128,14 +125,89 @@ namespace Annstore.DataMixture.Tests.DataMixtures
             categoryDataDependencyResolverMock.Setup(c => c.DeleteMixCategoryForCategoryAsync(updatedCategory))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
-            categoryDataDependencyResolverMock.Setup(c => c.UpdateChildrenOfMixParentCategoryAsync(updatedCategory))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
             var categoryDataMixturer = new CategoryDataMixturer(categoryDataDependencyResolverMock.Object);
 
             var result = await categoryDataMixturer.ApplyForUpdatedCategoryAsync(updatedCategory);
 
-            Assert.Null( result);
+            Assert.Null(result);
+            categoryDataDependencyResolverMock.Verify();
+        }
+
+        #endregion
+
+        #region ApplyForCreatedMixCategoryAsync
+        [Fact]
+        public async Task ApplyForCreatedMixCategoryAsync_MixCategoryIsNull_ThrowArgumentNullException()
+        {
+            var categoryDataMixturer = new CategoryDataMixturer(Mock.Of<ICategoryDataDependencyResolver>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryDataMixturer.ApplyForCreatedMixCategoryAsync(null));
+        }
+
+        [Fact]
+        public async Task ApplyForCreatedMixCategoryAsync_MixCategoryIsNotNull_UpdateChildrenOfParentMixCategoryForIt()
+        {
+            var createdMixCategory = new MixCategory();
+            var categoryDataDependencyResolverMock = new Mock<ICategoryDataDependencyResolver>();
+            categoryDataDependencyResolverMock.Setup(c => c.UpdateChildrenOfMixParentCategoryForAsync(createdMixCategory))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            var categoryDataMixturer = new CategoryDataMixturer(categoryDataDependencyResolverMock.Object);
+
+            await categoryDataMixturer.ApplyForCreatedMixCategoryAsync(createdMixCategory);
+
+            categoryDataDependencyResolverMock.Verify();
+        }
+
+        #endregion
+
+        #region ApplyForDeletedMixCategoryAsync
+        [Fact]
+        public async Task ApplyForDeletedMixCategoryAsync_MixCategoryIsNull_ThrowArgumentNullException()
+        {
+            var categoryDataMixturer = new CategoryDataMixturer(Mock.Of<ICategoryDataDependencyResolver>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryDataMixturer.ApplyForDeletedMixCategoryAsync(null));
+        }
+
+        [Fact]
+        public async Task ApplyForDeletedMixCategoryAsync_MixCategoryIsNotNull_UpdateChildrenOfParentMixCategoryForItAndUpdateContainingCategoryBreacrumbs()
+        {
+            var deletedMixCategory = new MixCategory();
+            var categoryDataDependencyResolverMock = new Mock<ICategoryDataDependencyResolver>();
+            categoryDataDependencyResolverMock.Setup(c => c.UpdateChildrenOfMixParentCategoryForAsync(deletedMixCategory))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            var categoryDataMixturer = new CategoryDataMixturer(categoryDataDependencyResolverMock.Object);
+
+            await categoryDataMixturer.ApplyForDeletedMixCategoryAsync(deletedMixCategory);
+
+            categoryDataDependencyResolverMock.Verify();
+        }
+
+        #endregion
+
+        #region ApplyForUpdatedMixCategoryAsync
+        [Fact]
+        public async Task ApplyForUpdatedMixCategoryAsync_MixCategoryIsNull_ThrowArgumentNullException()
+        {
+            var categoryDataMixturer = new CategoryDataMixturer(Mock.Of<ICategoryDataDependencyResolver>());
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => categoryDataMixturer.ApplyForUpdatedMixCategoryAsync(null));
+        }
+
+        [Fact]
+        public async Task ApplyForUpdatedMixCategoryAsync_MixCategoryIsNotNull_UpdateChildrenOfParentMixCategoryForItAndUpdateContainingCategoryBreadcrumbs()
+        {
+            var updatedMixCategory = new MixCategory();
+            var categoryDataDependencyResolverMock = new Mock<ICategoryDataDependencyResolver>();
+            categoryDataDependencyResolverMock.Setup(c => c.UpdateChildrenOfMixParentCategoryForAsync(updatedMixCategory))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            var categoryDataMixturer = new CategoryDataMixturer(categoryDataDependencyResolverMock.Object);
+
+            await categoryDataMixturer.ApplyForUpdatedMixCategoryAsync(updatedMixCategory);
+
             categoryDataDependencyResolverMock.Verify();
         }
 

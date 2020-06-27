@@ -5,7 +5,7 @@ using MixCategory = Annstore.Query.Entities.Catalog.Category;
 
 namespace Annstore.DataMixture.Events
 {
-    public class MixCategoryEventHandler :
+    public sealed class MixCategoryEventHandler :
         IEventHandler<EntityCreatedEvent<MixCategory>>,
         IEventHandler<EntityDeletedEvent<MixCategory>>,
         IEventHandler<EntityUpdatedEvent<MixCategory>>

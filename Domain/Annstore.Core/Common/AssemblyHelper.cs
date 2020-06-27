@@ -7,12 +7,12 @@ namespace Annstore.Core.Common
 {
     public sealed class AssemblyHelper : IAssemblyHelper
     {
-        private static string Annstore = "ANNSTORE";
+        private const string APP_ASSEMBLY_BASENAME = "ANNSTORE";
 
-        public IEnumerable<Assembly> GetAnnstoreAssemblies()
+        public IEnumerable<Assembly> GetAppOwnAssemblies()
         {
             var annstoreAssemblies = from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                                     where assembly.FullName.ToUpper().Contains("ANNSTORE")
+                                     where assembly.FullName.ToUpper().Contains(APP_ASSEMBLY_BASENAME)
                                      select assembly;
 
             return annstoreAssemblies;

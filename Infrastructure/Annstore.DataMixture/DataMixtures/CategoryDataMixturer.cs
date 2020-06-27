@@ -29,26 +29,24 @@ namespace Annstore.DataMixture.DataMixtures
 
             var mixCategory = await _categoryDataDependencyResolver.CreateMixCategoryForCategoryAsync(category)
                 .ConfigureAwait(false);
-            await _categoryDataDependencyResolver.UpdateChildrenOfMixParentCategoryAsync(category)
-                .ConfigureAwait(false);
-            
             return mixCategory;
         }
 
         public async Task ApplyForDeletedCategoryAsync(Category category)
         {
-            if(category == null)
+            if (category == null)
                 throw new ArgumentNullException(nameof(category));
 
             await _categoryDataDependencyResolver.DeleteMixCategoryForCategoryAsync(category)
                 .ConfigureAwait(false);
-            await _categoryDataDependencyResolver.UpdateChildrenOfMixParentCategoryAsync(category)
+
+            await _categoryDataDependencyResolver.UpdateBreadcrumbsOfCategoryAsync(category)
                 .ConfigureAwait(false);
         }
 
         public async Task<MixCategory> ApplyForUpdatedCategoryAsync(Category category)
         {
-            if(category == null)
+            if (category == null)
                 throw new ArgumentNullException(nameof(category));
 
             MixCategory updatedMixCategory;
@@ -63,7 +61,7 @@ namespace Annstore.DataMixture.DataMixtures
                 updatedMixCategory = await _categoryDataDependencyResolver.UpdateMixCategoryForCategoryAsync(category)
                     .ConfigureAwait(false);
             }
-            await _categoryDataDependencyResolver.UpdateChildrenOfMixParentCategoryAsync(category)
+            await _categoryDataDependencyResolver.UpdateBreadcrumbsOfCategoryAsync(category)
                 .ConfigureAwait(false);
 
             return updatedMixCategory;
@@ -72,24 +70,31 @@ namespace Annstore.DataMixture.DataMixtures
         #endregion
 
         #region MixCategory
-        public Task ApplyForCreatedMixCategoryAsync(MixCategory mixCategory)
+        public async Task ApplyForCreatedMixCategoryAsync(MixCategory mixCategory)
         {
-            return Task.CompletedTask;
+            if (mixCategory == null)
+                throw new ArgumentNullException(nameof(mixCategory));
+
+            await _categoryDataDependencyResolver.UpdateChildrenOfMixParentCategoryForAsync(mixCategory)
+                .ConfigureAwait(false);
         }
 
-        public Task ApplyForDeletedMixCategoryAsync(MixCategory mixCategory)
+        public async Task ApplyForDeletedMixCategoryAsync(MixCategory mixCategory)
         {
-            return Task.CompletedTask;
+            if (mixCategory == null)
+                throw new ArgumentNullException(nameof(mixCategory));
+
+            await _categoryDataDependencyResolver.UpdateChildrenOfMixParentCategoryForAsync(mixCategory)
+                .ConfigureAwait(false);
         }
 
-        public Task<MixCategory> ApplyForUpdatedMixCategoryAsync(Category category)
+        public async Task ApplyForUpdatedMixCategoryAsync(MixCategory mixCategory)
         {
-            throw new System.NotImplementedException();
-        }
+            if (mixCategory == null)
+                throw new ArgumentNullException(nameof(mixCategory));
 
-        public Task ApplyForUpdatedMixCategoryAsync(MixCategory mixCategory)
-        {
-            return Task.CompletedTask;
+            await _categoryDataDependencyResolver.UpdateChildrenOfMixParentCategoryForAsync(mixCategory)
+                .ConfigureAwait(false);
         }
         #endregion
     }

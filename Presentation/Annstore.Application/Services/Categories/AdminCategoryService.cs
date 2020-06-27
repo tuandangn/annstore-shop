@@ -88,7 +88,8 @@ namespace Annstore.Application.Services.Categories
             try
             {
                 var category = _mapper.Map<Category>(request.Data);
-                await _categoryService.CreateCategoryAsync(category).ConfigureAwait(false);
+                await _categoryService.CreateCategoryAsync(category)
+                    .ConfigureAwait(false);
                 return AppResponse.SuccessResult(category);
             }
             catch (Exception ex)
@@ -103,7 +104,8 @@ namespace Annstore.Application.Services.Categories
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
-            var categories = await _categoryService.GetCategoriesAsync(showHidden).ConfigureAwait(false);
+            var categories = await _categoryService.GetCategoriesAsync(showHidden)
+                .ConfigureAwait(false);
             if (model.Id != 0)
             {
                 var removeItemIndex = categories.FindIndex(c => c.Id == model.Id);
@@ -118,7 +120,10 @@ namespace Annstore.Application.Services.Categories
                 //breadcrumb
                 if (breadcrumbOpts.Enable)
                 {
-                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(category, breadcrumbOpts.DeepLevel, breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget, breadcrumbOpts.ShowHidden)
+                    var breadcrumb = await GetCategoryBreadcrumbStringAsync(
+                        category, breadcrumbOpts.DeepLevel,
+                        breadcrumbOpts.Separator, breadcrumbOpts.UseParentAsTarget,
+                        breadcrumbOpts.ShowHidden)
                        .ConfigureAwait(false);
                     categoryModel.Breadcrumb = breadcrumb;
                 }
@@ -143,7 +148,8 @@ namespace Annstore.Application.Services.Categories
             try
             {
                 category = _mapper.Map(request.Data, category);
-                await _categoryService.UpdateCategoryAsync(category).ConfigureAwait(false);
+                await _categoryService.UpdateCategoryAsync(category)
+                    .ConfigureAwait(false);
 
                 return AppResponse.SuccessResult(category);
             }
@@ -159,7 +165,8 @@ namespace Annstore.Application.Services.Categories
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var category = await _categoryService.GetCategoryByIdAsync(request.Data).ConfigureAwait(false);
+            var category = await _categoryService.GetCategoryByIdAsync(request.Data)
+                .ConfigureAwait(false);
             if (category == null)
                 return AppResponse.InvalidModelResult(AdminMessages.Category.CategoryIsNotFound);
 
@@ -167,7 +174,8 @@ namespace Annstore.Application.Services.Categories
             {
                 if (!category.Deleted)
                 {
-                    await _categoryService.DeleteCategoryAsync(category).ConfigureAwait(false);
+                    await _categoryService.DeleteCategoryAsync(category)
+                        .ConfigureAwait(false);
                 }
 
                 return AppResponse.SuccessResult(AdminMessages.Category.DeleteCategorySuccess);

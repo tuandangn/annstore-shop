@@ -84,6 +84,7 @@ namespace Annstore.Services.Catalog
             await _GetCategoryBreadcrum(breadcrumb, category, 0, deepLevel, showHidden)
                 .ConfigureAwait(false);
             breadcrumb.Reverse();
+
             return breadcrumb;
         }
 
@@ -92,12 +93,15 @@ namespace Annstore.Services.Catalog
             if (category.ParentId == 0 || currentLevel == maxLevel)
                 return breadcrumb;
 
-            var parentCategory = await _categoryRepository.FindByIdAsync(category.ParentId).ConfigureAwait(false);
+            var parentCategory = await _categoryRepository.FindByIdAsync(category.ParentId)
+                .ConfigureAwait(false);
             if (parentCategory == null || parentCategory.Deleted || (!showHidden && !parentCategory.Published))
                 return breadcrumb;
+
             breadcrumb.Add(parentCategory);
             await _GetCategoryBreadcrum(breadcrumb, parentCategory, currentLevel + 1, maxLevel, showHidden)
                 .ConfigureAwait(false);
+
             return breadcrumb;
         }
 
@@ -126,20 +130,14 @@ namespace Annstore.Services.Catalog
             if (parent == null)
                 throw new ArgumentNullException(nameof(parent));
 
-            try
-            {
-                var query = from category in _categoryRepository.Table
-                            where !category.Deleted && category.Published &&
-                                category.ParentId == parent.Id
-                            orderby category.Id descending
-                            select category;
+            var query = from category in _categoryRepository.Table
+                        where !category.Deleted && category.Published &&
+                            category.ParentId == parent.Id
+                        orderby category.Id descending
+                        select category;
 
-                return await query.ToListAsync().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return await query.ToListAsync()
+                .ConfigureAwait(false);
         }
     }
 }

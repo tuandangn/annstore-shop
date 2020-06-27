@@ -1,8 +1,10 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 namespace Annstore.Query
 {
+    [Serializable]
     public class QueryBaseEntity
     {
         [BsonId]

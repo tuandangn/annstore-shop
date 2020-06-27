@@ -16,9 +16,12 @@ namespace Annstore.Data.Customers
         public override async Task DeleteAsync(Customer entity)
         {
             entity.IsDeleted(true);
-            await UpdateAsync(entity);
 
-            await _eventPublisher.EntityDeleted(entity);
+            await UpdateAsync(entity)
+                .ConfigureAwait(false);
+
+            await _eventPublisher.EntityDeleted(entity)
+                .ConfigureAwait(false);
         }
     }
 }

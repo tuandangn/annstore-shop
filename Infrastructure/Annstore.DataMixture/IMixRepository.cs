@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 namespace Annstore.DataMixture
 {
@@ -13,5 +14,7 @@ namespace Annstore.DataMixture
         Task<TEntity> UpdateAsync(TEntity entity);
 
         Task DeleteAsync(TEntity entity);
+
+        IQueryable<TEntity> GetAll();
     }
 }

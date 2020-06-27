@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\Domain\Annstore.Core\Annstore.Core.csproj" />
     <ProjectReference Include="..\..\Domain\Annstore.Services\Annstore.Services.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Annstore.Auth\Annstore.Auth.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Annstore.Query\Annstore.Query.csproj" />
   </ItemGroup>
 
 </Project>

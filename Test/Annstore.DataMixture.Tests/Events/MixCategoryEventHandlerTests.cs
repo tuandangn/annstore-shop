@@ -1,5 +1,4 @@
-﻿using Annstore.Core.Entities.Catalog;
-using Annstore.Core.Events;
+﻿using Annstore.Core.Events;
 using Annstore.DataMixture.DataMixtures;
 using Annstore.DataMixture.Events;
 using Moq;

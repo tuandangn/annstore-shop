@@ -5,6 +5,6 @@ namespace Annstore.Core.Common
 {
     public interface IAssemblyHelper
     {
-        IEnumerable<Assembly> GetAnnstoreAssemblies();
+        IEnumerable<Assembly> GetAppOwnAssemblies();
     }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Annstore.DataMixture.Events
 {
-    public class DomainCategoryEventHandler :
+    public sealed class DomainCategoryEventHandler :
         IEventHandler<EntityCreatedEvent<Category>>,
         IEventHandler<EntityDeletedEvent<Category>>,
         IEventHandler<EntityUpdatedEvent<Category>>

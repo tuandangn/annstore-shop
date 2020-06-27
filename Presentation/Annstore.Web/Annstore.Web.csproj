@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\Infrastructure\Annstore.Data\Annstore.Data.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Annstore.Query\Annstore.Query.csproj" />
     <ProjectReference Include="..\Annstore.Application\Annstore.Application.csproj" />
+    <ProjectReference Include="..\Annstore.Framework\Annstore.Framework.csproj" />
   </ItemGroup>
 
   <ItemGroup>

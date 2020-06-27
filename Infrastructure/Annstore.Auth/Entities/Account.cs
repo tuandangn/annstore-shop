@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System;
 
 namespace Annstore.Auth.Entities
 {
-    public class Account : IdentityUser<int>
+    [Serializable]
+    public sealed class Account : IdentityUser<int>
     {
         public int CustomerId { get; set; }
     }

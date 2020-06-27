@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Annstore.Services.Events
+namespace Annstore.Framework.Events
 {
     public sealed class EventPublisher : IEventPublisher
     {
@@ -54,7 +54,8 @@ namespace Annstore.Services.Events
                 {
                     return _serviceProvider.GetRequiredService(handlerType);
                 });
-                await ((IEventHandler<TMessage>)handler).HandleAsync(message).ConfigureAwait(false);
+                await ((IEventHandler<TMessage>)handler).HandleAsync(message)
+                    .ConfigureAwait(false);
             }
         }
     }

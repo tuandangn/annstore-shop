@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Annstore.Query.Infrastructure
 {
-    public class ReadonlyMongoCollection<TEntity> : IReadonlyMongoCollection<TEntity>
+    public sealed class ReadonlyMongoCollection<TEntity> : IReadonlyMongoCollection<TEntity>
     {
         private readonly IMongoCollection<TEntity> _collection;
 

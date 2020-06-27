@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using MixCategory = Annstore.Query.Entities.Catalog.Category;
 
 namespace Annstore.DataMixture.Services.Catalog
@@ -12,5 +13,7 @@ namespace Annstore.DataMixture.Services.Catalog
         Task DeleteMixCategoryAsync(MixCategory category);
 
         Task<MixCategory> UpdateMixCategoryAsync(MixCategory category);
+
+        IQueryable<MixCategory> GetAllMixCategories();
     }
 }

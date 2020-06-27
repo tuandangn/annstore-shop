@@ -2,7 +2,7 @@
 
 namespace Annstore.Query.Infrastructure
 {
-    public class ReadonlyMongoDatabase : IReadonlyMongoDatabase
+    public sealed class ReadonlyMongoDatabase : IReadonlyMongoDatabase
     {
         private readonly IMongoDatabase _database;
 

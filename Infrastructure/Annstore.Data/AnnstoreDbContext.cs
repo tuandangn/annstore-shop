@@ -2,7 +2,7 @@
 
 namespace Annstore.Data
 {
-    public class AnnstoreDbContext : DbContext, IDbContext
+    public sealed class AnnstoreDbContext : DbContext, IDbContext
     {
         public AnnstoreDbContext(DbContextOptions<AnnstoreDbContext> opts) : base(opts)
         {

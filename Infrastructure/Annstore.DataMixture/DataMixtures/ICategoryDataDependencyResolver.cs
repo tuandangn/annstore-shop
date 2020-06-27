@@ -8,10 +8,14 @@ namespace Annstore.DataMixture.DataMixtures
     {
         Task<MixCategory> CreateMixCategoryForCategoryAsync(Category category);
 
-        Task UpdateChildrenOfMixParentCategoryAsync(Category category);
+        Task UpdateChildrenOfMixParentCategoryOfAsync(Category category);
 
-        Task DeleteMixCategoryForCategoryAsync(Category category);
+        Task UpdateChildrenOfMixParentCategoryForAsync(MixCategory mixCategory);
+
+        Task UpdateBreadcrumbsOfCategoryAsync(Category category);
 
         Task<MixCategory> UpdateMixCategoryForCategoryAsync(Category category);
+
+        Task DeleteMixCategoryForCategoryAsync(Category category);
     }
 }
